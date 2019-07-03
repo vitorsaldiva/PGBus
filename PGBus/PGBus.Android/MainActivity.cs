@@ -19,6 +19,9 @@ namespace PGBus.Droid
 
             base.OnCreate(savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            //Iniciando mapa
+            Xamarin.FormsGoogleMaps.Init(this, savedInstanceState);
+
             LoadApplication(new App());
         }
     }
