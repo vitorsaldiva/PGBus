@@ -22,6 +22,13 @@ namespace PGBus.Droid
             Xamarin.Forms.Forms.Init(this, savedInstanceState);
             Platform.Init(this, savedInstanceState);
 
+            var currentWindow = GetCurrentWindow();
+            currentWindow.AddFlags(WindowManagerFlags.TranslucentNavigation);
+            currentWindow.DecorView.SystemUiVisibility = (StatusBarVisibility)SystemUiFlags.LightStatusBar;
+            currentWindow.SetStatusBarColor(Android.Graphics.Color.Transparent);
+
+
+
             LoadApplication(new App());
         }
 
@@ -29,6 +36,19 @@ namespace PGBus.Droid
         {
             Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        public Window GetCurrentWindow()
+        {
+            var window = Window;
+
+            // clear FLAG_TRANSLUCENT_STATUS flag:
+            window.ClearFlags(WindowManagerFlags.TranslucentStatus);
+
+            // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+            window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+
+            return window;
         }
     }
 }

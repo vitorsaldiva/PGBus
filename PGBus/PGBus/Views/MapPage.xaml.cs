@@ -28,7 +28,8 @@ namespace PGBus.Views
             map.UiSettings.ZoomGesturesEnabled = true;
             StylingMap();
 
-            
+
+
         }
 
         private void StylingMap()
@@ -77,19 +78,19 @@ namespace PGBus.Views
 
         protected override void OnAppearing()
         {
-            base.OnAppearing();
             if (myLocation != null)
             {
                 try
                 {
-                    map.MoveToRegion(MapSpan.FromCenterAndRadius(new Position(myLocation.Latitude, myLocation.Longitude), Distance.FromMeters(1000)), true);
+                    map.MoveToRegion(MapSpan.FromCenterAndRadius(new Position(myLocation.Latitude, myLocation.Longitude), Distance.FromMeters(1000)));
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
                 }
             }
-            
+
+            base.OnAppearing();
         }
 
 
