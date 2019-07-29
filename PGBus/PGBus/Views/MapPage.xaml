@@ -2,12 +2,8 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:maps="clr-namespace:Xamarin.Forms.GoogleMaps;assembly=Xamarin.Forms.GoogleMaps"
-             x:Class="PGBus.Views.MapPage"
-             xmlns:vm="clr-namespace:PGBus.ViewModels">
+             x:Class="PGBus.Views.MapPage">
 
-    <!--<ContentPage.BindingContext>
-        
-    </ContentPage.BindingContext>-->
 
     <StackLayout>
         <maps:Map x:Name="map" VerticalOptions="FillAndExpand" />

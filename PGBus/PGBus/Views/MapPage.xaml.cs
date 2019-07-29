@@ -1,10 +1,12 @@
-﻿using System;
+﻿using PGBus.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.GoogleMaps;
@@ -15,20 +17,19 @@ namespace PGBus.Views
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapPage : ContentPage
 	{
-        Location myLocation;
+        Location OriginCoordinates { get; set; }
 
-		public MapPage ()
+        public MapPage ()
 		{
 			InitializeComponent ();
+            BindingContext = new MapPageViewModel();
 
-            myLocation = GetLocation().Result;
             map.MyLocationEnabled = true;
             map.UiSettings.MyLocationButtonEnabled = true;
             map.UiSettings.ZoomControlsEnabled = false;
             map.UiSettings.ZoomGesturesEnabled = true;
+            GetActualUserLocation();
             StylingMap();
-
-
 
         }
 
@@ -45,52 +46,39 @@ namespace PGBus.Views
             map.MapStyle = MapStyle.FromJson(styleFile);
         }
 
-        public async Task<Location> GetLocation()
+        async Task OnCenterMap(Location location)
         {
-            try
-            {
-                var location = await Geolocation.GetLastKnownLocationAsync();
+            await Task.Delay(500);
+            map.MoveToRegion(MapSpan.FromCenterAndRadius(
+                new Position(location.Latitude, location.Longitude), Distance.FromMeters(50)));
 
-                if (location != null)
-                {
-                    return location;
-                }
-            }
-            catch (FeatureNotSupportedException fnsEx)
-            {
-                // Handle not supported on device exception
-            }
-            catch (FeatureNotEnabledException fneEx)
-            {
-                // Handle not enabled on device exception
-            }
-            catch (PermissionException pEx)
-            {
-                // Handle permission exception
-            }
-            catch (Exception ex)
-            {
-                // Unable to get location
-            }
-
-            return null;
+            //LoadBuses(location);
         }
 
         protected override void OnAppearing()
         {
-            if (myLocation != null)
+            Task.Delay(500);
+            OnCenterMap(OriginCoordinates);
+            base.OnAppearing();
+        }
+
+        protected async Task GetActualUserLocation()
+        {
+            try
             {
-                try
+                await Task.Yield();
+                var request = new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(5000));
+                var location = await Geolocation.GetLocationAsync(request);
+
+                if (location != null)
                 {
-                    map.MoveToRegion(MapSpan.FromCenterAndRadius(new Position(myLocation.Latitude, myLocation.Longitude), Distance.FromMeters(1000)));
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
+                    OriginCoordinates = location;
                 }
             }
-
-            base.OnAppearing();
+            catch (Exception ex)
+            {
+                //await UserDialogs.Instance.AlertAsync("Error", "Unable to get actual location", "Ok");
+            }
         }
 
 
