@@ -19,9 +19,10 @@
 
   <ItemGroup>
     <PackageReference Include="Xamarin.Essentials" Version="1.2.0" />
-    <PackageReference Include="Xamarin.Forms" Version="3.4.0.1008975" />
+    <PackageReference Include="Xamarin.Forms" Version="4.1.0.618606" />
+    <PackageReference Include="Xamarin.Forms.DebugRainbows" Version="1.0.16" />
     <PackageReference Include="Xamarin.Forms.GoogleMaps" Version="3.2.0" />
-    <PackageReference Include="Xamarin.HotReload" Version="1.4.12" />  
+    <PackageReference Include="Xamarin.HotReload" Version="1.4.15" />  
   </ItemGroup>
 
   <ItemGroup>

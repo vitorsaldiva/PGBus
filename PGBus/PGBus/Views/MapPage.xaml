@@ -1,11 +1,52 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+<ContentPage Rainbows:DebugRainbow.IsDebug="true"
+    xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
              xmlns:maps="clr-namespace:Xamarin.Forms.GoogleMaps;assembly=Xamarin.Forms.GoogleMaps"
+             xmlns:Rainbows="clr-namespace:Xamarin.Forms.DebugRainbows;assembly=Xamarin.Forms.DebugRainbows"
              x:Class="PGBus.Views.MapPage">
 
+    <Grid RowSpacing="0"
+          VerticalOptions="FillAndExpand">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <maps:Map
+            Grid.Row="0"
+            x:Name="map" VerticalOptions="FillAndExpand" />
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Button
+                Grid.Row="0"
+                    android:Button.UseDefaultPadding="true"
+                    android:Button.UseDefaultShadow="true"
+                    WidthRequest="50"
+                    HeightRequest="50"
+                    CornerRadius="10"
+                    HorizontalOptions="End"
+                    VerticalOptions="End"
+                    Margin="0,0,5,10"
+                    BackgroundColor="White"
+                    Text="+"
+                    Clicked="MyLocation_Clicked"/>
+            <Frame Grid.Row="1"
+                   IsVisible="True"
+                   VerticalOptions="End"
+                   HorizontalOptions="FillAndExpand"
+                   CornerRadius="5">
+                
+                <!--Incluir grid para layour do frame aqui-->
+                
+            </Frame>
+        </Grid>
 
-    <StackLayout>
-        <maps:Map x:Name="map" VerticalOptions="FillAndExpand" />
-    </StackLayout>
+
+
+
+
+    </Grid>
 </ContentPage>

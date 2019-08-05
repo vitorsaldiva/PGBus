@@ -25,9 +25,9 @@ namespace PGBus.Views
             BindingContext = new MapPageViewModel();
 
             map.MyLocationEnabled = true;
-            map.UiSettings.MyLocationButtonEnabled = true;
+            map.UiSettings.MyLocationButtonEnabled = false;
             map.UiSettings.ZoomControlsEnabled = false;
-            map.UiSettings.ZoomGesturesEnabled = true;
+            map.UiSettings.ZoomGesturesEnabled = true; 
             GetActualUserLocation();
             StylingMap();
 
@@ -43,22 +43,19 @@ namespace PGBus.Views
                 styleFile = reader.ReadToEnd();
             }
 
-            map.MapStyle = MapStyle.FromJson(styleFile);
+            map.MapStyle = MapStyle.FromJson(styleFile); 
         }
 
         async Task OnCenterMap(Location location)
         {
-            await Task.Delay(500);
             map.MoveToRegion(MapSpan.FromCenterAndRadius(
-                new Position(location.Latitude, location.Longitude), Distance.FromMeters(50)));
+                    new Position(location.Latitude, location.Longitude), Distance.FromMeters(50))); 
 
             //LoadBuses(location);
         }
 
         protected override void OnAppearing()
         {
-            Task.Delay(500);
-            OnCenterMap(OriginCoordinates);
             base.OnAppearing();
         }
 
@@ -68,11 +65,11 @@ namespace PGBus.Views
             {
                 await Task.Yield();
                 var request = new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(5000));
-                var location = await Geolocation.GetLocationAsync(request);
+                OriginCoordinates = await Geolocation.GetLocationAsync(request);
 
-                if (location != null)
+                if (OriginCoordinates != null)
                 {
-                    OriginCoordinates = location;
+                    await OnCenterMap(OriginCoordinates);
                 }
             }
             catch (Exception ex)
@@ -81,6 +78,9 @@ namespace PGBus.Views
             }
         }
 
-
+        private async void MyLocation_Clicked(object sender, EventArgs e)
+        {
+            await OnCenterMap(OriginCoordinates);
+        }
     }
 }
