@@ -40,6 +40,16 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
+                    <Label Grid.Column="0" 
+                           Text="&#xf58d;"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center">
+                        
+                        <Label.FontFamily>
+                            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+                        </Label.FontFamily>
+                    </Label>
+
                     <customEntry:CustomEntryRenderer
                             Grid.Column="1"
                             Placeholder="Qual linha?" PlaceholderColor="LightGray"
@@ -63,9 +73,15 @@
                     VerticalOptions="End"
                     Margin="0,0,5,10"
                     BackgroundColor="White"
-                    Text="+"
-                    Clicked="MyLocation_Clicked"/>
-            
+                    Text="&#xf05b;"
+                    FontSize="Medium"
+                    Clicked="MyLocation_Clicked">
+
+                <Button.FontFamily>
+                    <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+                </Button.FontFamily>
+            </Button>
+
             <Frame Grid.Row="1"
                    IsVisible="True"
                    VerticalOptions="End"
@@ -84,16 +100,21 @@
                 Grid.Row="1"
                     android:Button.UseDefaultPadding="true"
                     android:Button.UseDefaultShadow="true"
-                    WidthRequest="30"
-                    HeightRequest="30"
-                    CornerRadius="15"
+                    WidthRequest="32"
+                    HeightRequest="32"
+                    CornerRadius="16"
                     HorizontalOptions="Center"
                     VerticalOptions="End"
                     Margin="0,0,0,0"
                     BackgroundColor="White"
-                    Text="X"
+                    Text="&#xf00d;"
                     FontSize="Micro"
-                    Clicked="MyLocation_Clicked"/>
+                    Clicked="MyLocation_Clicked">
+
+                <Button.FontFamily>
+                    <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+                </Button.FontFamily>
+            </Button>
         </Grid>
 
 
