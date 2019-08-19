@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage Rainbows:DebugRainbow.IsDebug="true"
+<ContentPage 
+    
     xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
@@ -7,6 +8,8 @@
              xmlns:customEntry="clr-namespace:PGBus.Renderers;assembly=PGBus"                 
              xmlns:Rainbows="clr-namespace:Xamarin.Forms.DebugRainbows;assembly=Xamarin.Forms.DebugRainbows"
              x:Class="PGBus.Views.MapPage">
+
+    <!--Rainbows:DebugRainbow.IsDebug="true"-->
 
     <Grid RowSpacing="0"
           VerticalOptions="FillAndExpand">
@@ -23,6 +26,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+            
             
             <Frame Grid.Row="0"
                    HeightRequest="40"
@@ -83,21 +87,57 @@
             </Button>
 
             <Frame Grid.Row="1"
-                   IsVisible="True"
+                   x:Name="Info"
+                   IsVisible="False"
                    VerticalOptions="End"
                    HorizontalOptions="CenterAndExpand"
-                   WidthRequest="180"
-                   HeightRequest="50"
+                   WidthRequest="200"
+                   HeightRequest="90"
                    Margin="0,0,0,30"
-                   CornerRadius="12">
-                
-                
-                <!--Incluir grid para layour do frame aqui-->
+                   CornerRadius="12"
+                   Padding="20">
+
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="2*" />
+                    </Grid.RowDefinitions>
+
+                    <RelativeLayout Grid.Row="0">
+                        <Label 
+                            HorizontalOptions="Start" 
+                            Margin="0,2"
+                            Text="&#xf207;" >
+                            <Label.FontFamily>
+                                <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+                            </Label.FontFamily>
+                        </Label>
+                        <Label 
+                            VerticalOptions="CenterAndExpand"
+                            HorizontalOptions="EndAndExpand"
+                            Margin="25,0"
+                            Text="LINHA 11 PR"></Label>
+                    </RelativeLayout>
+
+                    <Label Grid.Row="1" 
+                           Text="IDA - TERMINAL TUDE BASTOS" 
+                           VerticalOptions="Center" 
+                           HorizontalOptions="Center" />
+                    <Label Grid.Row="2" 
+                           VerticalOptions="End"
+                           FontSize="Micro"
+                           Text="Chegando em xx minutos"></Label>
+                    
+                    
+                </Grid>
                 
             </Frame>
 
             <Button
                 Grid.Row="1"
+                IsVisible="{Binding Path=IsVisible,Source={x:Reference Info}}"
                     android:Button.UseDefaultPadding="true"
                     android:Button.UseDefaultShadow="true"
                     WidthRequest="32"
