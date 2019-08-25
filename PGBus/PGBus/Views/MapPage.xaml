@@ -7,7 +7,8 @@
              xmlns:maps="clr-namespace:Xamarin.Forms.GoogleMaps;assembly=Xamarin.Forms.GoogleMaps"
              xmlns:customEntry="clr-namespace:PGBus.Renderers;assembly=PGBus"                 
              xmlns:Rainbows="clr-namespace:Xamarin.Forms.DebugRainbows;assembly=Xamarin.Forms.DebugRainbows"
-             x:Class="PGBus.Views.MapPage">
+             x:Class="PGBus.Views.MapPage"
+             >
 
     <!--Rainbows:DebugRainbow.IsDebug="true"-->
 
@@ -30,24 +31,25 @@
             
             <Frame Grid.Row="0"
                    HeightRequest="40"
-                   WidthRequest="200"
+                   WidthRequest="280"
                    CornerRadius="10"
                    VerticalOptions="StartAndExpand"
                    HorizontalOptions="CenterAndExpand"
                    HasShadow="True"
-                   Margin="0,30,0,0"
+                   Margin="0,50,0,0"
                    Padding="10,5">
 
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="20"/>
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <Label Grid.Column="0" 
                            Text="&#xf58d;"
                            VerticalOptions="Center"
-                           HorizontalOptions="Center">
+                           HorizontalOptions="Center"
+                           Margin="0">
                         
                         <Label.FontFamily>
                             <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
@@ -59,7 +61,7 @@
                             Placeholder="Qual linha?" PlaceholderColor="LightGray"
                             FontSize="Small"
                             ReturnType="Search"
-                            WidthRequest="150"
+                            WidthRequest="180"
                             IsSpellCheckEnabled="False"
                             IsTextPredictionEnabled="False"
                            />
@@ -156,10 +158,6 @@
                 </Button.FontFamily>
             </Button>
         </Grid>
-
-
-
-
 
     </Grid>
 </ContentPage>

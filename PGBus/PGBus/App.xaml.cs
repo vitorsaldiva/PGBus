@@ -16,12 +16,12 @@ namespace PGBus
 
             MainPage = new MainPage();
 
-#if DEBUG
-            HotReloader.Current.Run(this, new HotReloader.Configuration
-            {
-                DeviceUrlPort = 8001
-            });
-#endif
+//#if DEBUG
+//            HotReloader.Current.Run(this, new HotReloader.Configuration
+//            {
+//                DeviceUrlPort = 8001
+//            });
+//#endif
         }
 
         protected override void OnStart()

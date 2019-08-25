@@ -27,11 +27,11 @@ namespace PGBus.Views
             InitializeComponent();
             BindingContext = new MapPageViewModel();
 
+            map.UiSettings.ZoomGesturesEnabled = true;
             map.MyLocationEnabled = true;
             map.UiSettings.MyLocationButtonEnabled = false;
             map.UiSettings.ZoomControlsEnabled = false;
-            map.UiSettings.ZoomGesturesEnabled = true;
-            GetActualUserLocation();
+            //GetActualUserLocation();
             StylingMap();
 
         }
@@ -57,7 +57,33 @@ namespace PGBus.Views
 
             LoadBusStops();
 
-            //LoadBuses(location);
+            LoadBuses();
+        }
+
+        private void LoadBuses()
+        {
+            var vehiclesJson = @"{'prefixo':'2801','lat':-24.011008,'lng':-46.413548, 'sentido':2, 'conteudo':'<span><b>Prefixo:</b> 2801</br><b>Linha: </b>94BF<br><b>Sentido: </b>VOLTA<br><b>Horário: </b>20/08/2019 23:51:56<br></span>'}
+                            ,{'prefixo':'2802','lat':-24.00462,'lng':-46.41322, 'sentido':1, 'conteudo':'<span><b>Prefixo:</b> 2802</br><b>Linha: </b>94BF<br><b>Sentido: </b>IDA<br><b>Horário: </b>20/08/2019 23:51:55<br></span>'}";
+
+            vehiclesJson = vehiclesJson.Insert(0, "[").Insert((vehiclesJson.Length + 1), "]");
+
+            var vehicles = JsonConvert.DeserializeObject<List<Veiculo>>(vehiclesJson);
+
+            vehicles.ForEach(v =>
+            {
+                Pin ponto = new Pin()
+                {
+
+                    Type = PinType.Place,
+                    Position = new Position(v.Lat, v.Lng),
+                    ZIndex = 13,
+                    Label = v.Prefixo,
+                    //Icon = BitmapDescriptorFactory.FromBundle(@"bus_stop.png")
+
+                };
+
+                map.Pins.Add(ponto);
+            });
         }
 
         protected override void OnAppearing()
