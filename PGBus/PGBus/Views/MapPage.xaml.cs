@@ -25,14 +25,19 @@ namespace PGBus.Views
         public MapPage()
         {
             InitializeComponent();
-            BindingContext = new MapPageViewModel();
+
 
             map.UiSettings.ZoomGesturesEnabled = true;
-            map.MyLocationEnabled = true;
             map.UiSettings.MyLocationButtonEnabled = false;
             map.UiSettings.ZoomControlsEnabled = false;
-            //GetActualUserLocation();
+            map.MyLocationEnabled = true;
+
+
+            BindingContext = new MapPageViewModel();
+
             StylingMap();
+
+            GetActualUserLocation();
 
         }
 
