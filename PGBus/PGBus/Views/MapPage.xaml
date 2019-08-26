@@ -76,7 +76,8 @@
                     BackgroundColor="White"
                     Text="&#xf05b;"
                     FontSize="Medium"
-                    Clicked="MyLocation_Clicked">
+                    Command="{Binding GetActualUserLocationCommand}"
+                    IsEnabled="{Binding isBusy}">
 
             <Button.FontFamily>
                 <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />

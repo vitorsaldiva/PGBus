@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MvvmHelpers;
+using Newtonsoft.Json;
 using PGBus.Models;
 using PGBus.ViewModels;
 using System;
@@ -21,6 +22,10 @@ namespace PGBus.Views
     {
 
         Location OriginCoordinates { get; set; }
+        public Command GetVehiclesCommand { get; }
+        public Command GetActualUserLocationCommand { get; }
+        public Command GetBusStopCommand { get; }
+        public ObservableRangeCollection<Vehicle> Vehicles { get; }
 
         public MapPage()
         {
@@ -32,13 +37,14 @@ namespace PGBus.Views
             map.UiSettings.ZoomControlsEnabled = false;
             map.MyLocationEnabled = true;
 
+            Vehicles = new ObservableRangeCollection<Vehicle>();
+
 
             BindingContext = new MapPageViewModel();
 
             StylingMap();
 
-            GetActualUserLocation();
-
+            GetActualUserLocationCommand = new Command(async () => await GetActualUserLocation());
         }
 
         private void StylingMap()
@@ -62,17 +68,17 @@ namespace PGBus.Views
 
             LoadBusStops();
 
-            LoadBuses();
+            LoadVehicles();
         }
 
-        private void LoadBuses()
+        private async Task LoadVehicles()
         {
             var vehiclesJson = @"{'prefixo':'2801','lat':-24.011008,'lng':-46.413548, 'sentido':2, 'conteudo':'<span><b>Prefixo:</b> 2801</br><b>Linha: </b>94BF<br><b>Sentido: </b>VOLTA<br><b>Horário: </b>20/08/2019 23:51:56<br></span>'}
                             ,{'prefixo':'2802','lat':-24.00462,'lng':-46.41322, 'sentido':1, 'conteudo':'<span><b>Prefixo:</b> 2802</br><b>Linha: </b>94BF<br><b>Sentido: </b>IDA<br><b>Horário: </b>20/08/2019 23:51:55<br></span>'}";
 
             vehiclesJson = vehiclesJson.Insert(0, "[").Insert((vehiclesJson.Length + 1), "]");
 
-            var vehicles = JsonConvert.DeserializeObject<List<Veiculo>>(vehiclesJson);
+            var vehicles = JsonConvert.DeserializeObject<List<Vehicle>>(vehiclesJson);
 
             vehicles.ForEach(v =>
             {
@@ -98,8 +104,13 @@ namespace PGBus.Views
 
         protected async Task GetActualUserLocation()
         {
+            if (IsBusy)
+                return;
+
             try
             {
+                IsBusy = true;
+
                 await Task.Yield();
                 var request = new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(5000));
                 OriginCoordinates = await Geolocation.GetLocationAsync(request);
@@ -111,13 +122,17 @@ namespace PGBus.Views
             }
             catch (Exception ex)
             {
-                //await UserDialogs.Instance.AlertAsync("Error", "Unable to get actual location", "Ok");
+                await Application.Current.MainPage.DisplayAlert("Error", "Unable to get actual location", "Ok");
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 
         protected async void LoadBusStops()
         {
-            var stops = @"[
+            var stopsJson = @"[
                                     {'ponto':'4659','lat':-23.999152,'lng':-46.414534,'sentido':1,'conteudo':'<b>1400 - AV. TRABALHADORES (TERM. TUDE BASTOS)</b>'},
                                     {'ponto':'4748','lat':-24.001501,'lng':-46.41271,'sentido':1,'conteudo':'<b>7318 - AV. PRESIDENTE COSTA E SILVA,1341</b>'},
                                     {'ponto':'4773','lat':-24.003198,'lng':-46.413029,'sentido':1,'conteudo':'<b>7877 - AV. PRESIDENTE COSTA E SILVA, 1319 </b>'},
@@ -153,7 +168,7 @@ namespace PGBus.Views
                                     {'ponto':'4562','lat':-24.001006,'lng':-46.412468,'sentido':2,'conteudo':'<b>1256 - AV. PRESIDENTE COSTA E SILVA, S/N</b>'},
                                     {'ponto':'4759','lat':-23.998386,'lng':-46.414144,'sentido':2,'conteudo':'<b>7503 - TERMINAL TUDE BASTOS</b>'}]";
 
-            var pontos = JsonConvert.DeserializeObject<List<Ponto>>(stops);
+            var pontos = JsonConvert.DeserializeObject<List<BusStop>>(stopsJson);
 
             pontos.ForEach(p =>
             {
@@ -171,11 +186,5 @@ namespace PGBus.Views
                 map.Pins.Add(ponto);
             });
         }
-
-
-    private async void MyLocation_Clicked(object sender, EventArgs e)
-    {
-        await OnCenterMap(OriginCoordinates);
     }
-}
 }
