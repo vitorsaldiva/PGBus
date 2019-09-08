@@ -31,7 +31,6 @@ namespace PGBus.ViewModels
         }
 
         private ObservableCollection<Pin> _pins;
-
         public ObservableCollection<Pin> Pins
         {
             get => _pins;
@@ -42,10 +41,9 @@ namespace PGBus.ViewModels
             }
         }
 
-
         public MoveToRegionRequest MoveToRegionRequest { get; } = new MoveToRegionRequest();
 
-        public Command GetActualUserLocationCommand { get; }
+        public Command GetActualUserLocationCommand { get { return new Command(async () => await OnCenterMap(OriginCoordinates)); } }
 
 
         public MapPageViewModel()

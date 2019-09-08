@@ -85,7 +85,7 @@
                     Text="&#xf05b;"
                     FontSize="Medium"
                     Command="{Binding GetActualUserLocationCommand}"
-                    IsEnabled="{Binding isBusy}">
+                    IsEnabled="{Binding IsBusy}">
 
             <Button.FontFamily>
                 <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
