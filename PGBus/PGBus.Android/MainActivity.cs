@@ -21,6 +21,7 @@ namespace PGBus.Droid
             base.OnCreate(savedInstanceState);
 
             Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            Xamarin.FormsGoogleMapsBindings.Init();
             Platform.Init(this, savedInstanceState);
 
             var currentWindow = GetCurrentWindow();

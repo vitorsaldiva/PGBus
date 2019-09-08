@@ -24,7 +24,8 @@
     <PackageReference Include="Xamarin.Forms" Version="4.2.0.709249" />
     <PackageReference Include="Xamarin.Forms.DebugRainbows" Version="1.0.16" />
     <PackageReference Include="Xamarin.Forms.GoogleMaps" Version="3.2.1" />
-    <PackageReference Include="Xamarin.HotReload" Version="1.4.19" />  
+    <PackageReference Include="Xamarin.Forms.GoogleMaps.Bindings" Version="2.2.0" />
+    <PackageReference Include="Xamarin.HotReload" Version="1.4.15" />  
   </ItemGroup>
 
   <ItemGroup>

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PGBus.Models
 {
-    class BusStop
+    public class BusStop
     {
         [JsonProperty(PropertyName = "Ponto")]
         public string Codigo { get; set; }
