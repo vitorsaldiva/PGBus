@@ -6,12 +6,19 @@
              xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
              xmlns:maps="clr-namespace:Xamarin.Forms.GoogleMaps;assembly=Xamarin.Forms.GoogleMaps"
              xmlns:bindings="clr-namespace:Xamarin.Forms.GoogleMaps.Bindings;assembly=Xamarin.Forms.GoogleMaps.Bindings"
-             xmlns:customEntry="clr-namespace:PGBus.Renderers;assembly=PGBus"                 
+             xmlns:customEntry="clr-namespace:PGBus.Renderers;assembly=PGBus"
+             xmlns:converter="clr-namespace:PGBus.Converters;assembly=PGBus"
              xmlns:Rainbows="clr-namespace:Xamarin.Forms.DebugRainbows;assembly=Xamarin.Forms.DebugRainbows"
              x:Class="PGBus.Views.MapPage"
              >
 
     <!--Rainbows:DebugRainbow.IsDebug="true"-->
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converter:NegateBooleanConverter x:Key="negateBinding" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <Grid RowSpacing="0"
           VerticalOptions="FillAndExpand">
@@ -85,7 +92,7 @@
                     Text="&#xf05b;"
                     FontSize="Medium"
                     Command="{Binding GetActualUserLocationCommand}"
-                    IsEnabled="{Binding IsBusy}">
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource negateBinding}}">
 
             <Button.FontFamily>
                 <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
