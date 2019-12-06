@@ -14,7 +14,8 @@ namespace PGBus.Views
         {
             InitializeComponent();
 
-            MasterBehavior = MasterBehavior.Popover;
+            //MasterBehavior = MasterBehavior.Popover;
+            IsGestureEnabled = false;
 
         }
     }

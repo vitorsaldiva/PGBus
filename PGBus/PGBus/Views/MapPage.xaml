@@ -10,6 +10,7 @@
              xmlns:converter="clr-namespace:PGBus.Converters;assembly=PGBus"
              xmlns:Rainbows="clr-namespace:Xamarin.Forms.DebugRainbows;assembly=Xamarin.Forms.DebugRainbows"
              x:Class="PGBus.Views.MapPage"
+             xmlns:localViews="clr-namespace:PGBus.Views"
              >
 
     <!--Rainbows:DebugRainbow.IsDebug="true"-->
@@ -21,23 +22,37 @@
     </ContentPage.Resources>
 
     <Grid RowSpacing="0"
-          VerticalOptions="FillAndExpand">
+           VerticalOptions="FillAndExpand">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <maps:Map Grid.Row="0"
-            x:Name="map" VerticalOptions="FillAndExpand" 
-                  MyLocationEnabled="True">
-            <maps:Map.Behaviors>
-                <bindings:BindingVisibleRegionBehavior Value="{Binding VisibleRegion}"/>
-                <bindings:MoveToRegionBehavior Request="{Binding MoveToRegionRequest}" />
-                <bindings:BindingPinsBehavior Value="{Binding Pins}"/>
-            </maps:Map.Behaviors>
-        </maps:Map>
+        <Grid Grid.Row="0"
+              Grid.RowSpan="2"
+              ColumnSpacing="0"
+              RowSpacing="0">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <maps:Map 
+                Grid.Row="0"
+                
+                x:Name="map" 
+                HorizontalOptions="FillAndExpand" 
+                MyLocationEnabled="True">
+                <maps:Map.Behaviors>
+                    <bindings:BindingVisibleRegionBehavior Value="{Binding VisibleRegion}"/>
+                    <bindings:MoveToRegionBehavior Request="{Binding MoveToRegionRequest}" />
+                    <bindings:BindingPinsBehavior Value="{Binding Pins}"/>
+                </maps:Map.Behaviors>
+            </maps:Map>
 
 
-        <Frame Grid.Row="0"
+            <Frame Grid.Row="0"
                    HeightRequest="40"
                    WidthRequest="280"
                    CornerRadius="10"
@@ -47,24 +62,24 @@
                    Margin="5,45,5,0"
                    Padding="5">
 
-            <Grid x:Name="searchLine">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+                <Grid x:Name="searchLine">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-                <Label Grid.Column="0" 
+                    <Label Grid.Column="0" 
                            Text="&#xf58d;"
                            VerticalOptions="Center"
                            HorizontalOptions="Center"
                            Margin="0">
 
-                    <Label.FontFamily>
-                        <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
-                    </Label.FontFamily>
-                </Label>
+                        <Label.FontFamily>
+                            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+                        </Label.FontFamily>
+                    </Label>
 
-                <customEntry:CustomEntryRenderer
+                    <customEntry:CustomEntryRenderer
                             Grid.Column="1"
                             Placeholder="Qual linha?" PlaceholderColor="LightGray"
                             FontSize="Small"
@@ -72,13 +87,24 @@
                             WidthRequest="180"
                             IsSpellCheckEnabled="False"
                             IsTextPredictionEnabled="False"/>
-            </Grid>
-        </Frame>
+                </Grid>
+            </Frame>
+
+
+
+            <!--Buscar linha-->
+            <!--<localViews:LinhasPage Grid.Row="1" IsVisible="False" x:Name="SearchLinha">
+            
+        </localViews:LinhasPage>-->
+
+
+
+        </Grid>
 
         <!--Ao exibir card de info do veiculo-->
         <!--Margin="0,0,5,160"-->
         <Button
-                Grid.Row="0"
+                Grid.Row="1"
                     android:Button.UseDefaultPadding="true"
                     android:Button.UseDefaultShadow="true"
                     WidthRequest="50"
@@ -146,7 +172,7 @@
         </Frame>
 
         <Button
-                Grid.Row="0"
+                Grid.Row="1"
                 IsVisible="{Binding Path=IsVisible,Source={x:Reference Info}}"
                     android:Button.UseDefaultPadding="true"
                     android:Button.UseDefaultShadow="true"
@@ -165,6 +191,5 @@
                 <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
             </Button.FontFamily>
         </Button>
-
     </Grid>
 </ContentPage>

@@ -18,7 +18,7 @@ namespace PGBus.Services
 
         public List<BusStop> LoadBusStops(string lineId)
         {
-            var doc = webPage.LoadFromWebAsync(url + $"/pg_mapaLinha.php?idLinha={lineId}").Result;
+            var doc = webPage.LoadFromWebAsync($"{url}/pg_mapaLinha.php?idLinha={lineId}").Result;
             var scriptNode = doc.DocumentNode.SelectNodes("//script[last()]").Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?.FirstOrDefault();
 
             var latLngBusStop = new List<BusStop>();
