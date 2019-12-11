@@ -13,15 +13,16 @@ namespace PGBus
         {
             InitializeComponent();
 
-
-            MainPage = new MainPage();
-
 #if DEBUG
             HotReloader.Current.Run(this, new HotReloader.Configuration
             {
                 DeviceUrlPort = 8001
             });
 #endif
+
+            MainPage = new MainPage();
+
+
         }
 
         protected override void OnStart()

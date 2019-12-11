@@ -43,6 +43,17 @@ namespace PGBus.ViewModels
             }
         }
 
+        private ObservableCollection<string> _items;
+        public ObservableCollection<string> Items
+        {
+            get => _items;
+            set
+            {
+                _items = value;
+                OnPropertyChanged("Items");
+            }
+        }
+
         public MoveToRegionRequest MoveToRegionRequest { get; } = new MoveToRegionRequest();
 
         public Command GetActualUserLocationCommand { get { return new Command(async () => await OnCenterMap(OriginCoordinates)); } }
@@ -78,9 +89,9 @@ namespace PGBus.ViewModels
         async Task OnCenterMap(Location location)
         {
             if (location != null)
-               VisibleRegion = MapSpan.FromCenterAndRadius(
-                                    new Position(location.Latitude, location.Longitude),
-                                        Distance.FromMeters(50));
+                VisibleRegion = MapSpan.FromCenterAndRadius(
+                                     new Position(location.Latitude, location.Longitude),
+                                         Distance.FromMeters(50));
 
             MoveToRegionRequest.MoveToRegion(VisibleRegion);
         }
@@ -148,6 +159,15 @@ namespace PGBus.ViewModels
 
         protected async Task InitializeAsync()
         {
+            Items = new ObservableCollection<string>
+            {
+                "Item 1",
+                "Item 2",
+                "Item 3",
+                "Item 4",
+                "Item 5"
+            };
+
             OriginCoordinates = await GetActualUserLocation();
             OnCenterMap(OriginCoordinates);
 

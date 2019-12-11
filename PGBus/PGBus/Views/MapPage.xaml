@@ -11,9 +11,9 @@
              xmlns:Rainbows="clr-namespace:Xamarin.Forms.DebugRainbows;assembly=Xamarin.Forms.DebugRainbows"
              x:Class="PGBus.Views.MapPage"
              xmlns:localViews="clr-namespace:PGBus.Views"
-             >
+             Rainbows:DebugRainbow.IsDebug="true">
 
-    <!--Rainbows:DebugRainbow.IsDebug="true"-->
+    <!---->
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -40,7 +40,6 @@
 
             <maps:Map 
                 Grid.Row="0"
-                
                 x:Name="map" 
                 HorizontalOptions="FillAndExpand" 
                 MyLocationEnabled="True">
@@ -91,19 +90,95 @@
             </Frame>
 
 
+            <!--Hidden-->
+            <!--<Frame Grid.Row="1"
+                       x:Name="Info"
+                       IsVisible="True"
+                       VerticalOptions="End"
+                       HorizontalOptions="CenterAndExpand"
+                       WidthRequest="200"
+                       HeightRequest="90"
+                       Margin="0,0,0,30"
+                       CornerRadius="12"
+                       Padding="20">
 
-            <!--Buscar linha-->
-            <!--<localViews:LinhasPage Grid.Row="1" IsVisible="False" x:Name="SearchLinha">
-            
-        </localViews:LinhasPage>-->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="2*" />
+                </Grid.RowDefinitions>
+
+                <RelativeLayout Grid.Row="0">
+                    <Label 
+                                HorizontalOptions="Start" 
+                                Margin="0,2"
+                                Text="&#xf207;" >
+                        <Label.FontFamily>
+                            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+                        </Label.FontFamily>
+                    </Label>
+                    <Label 
+                                VerticalOptions="CenterAndExpand"
+                                HorizontalOptions="EndAndExpand"
+                                Margin="25,0"
+                                Text="LINHA 11 PR"></Label>
+                </RelativeLayout>
+
+                <Label Grid.Row="1" 
+                               Text="IDA - TERMINAL TUDE BASTOS" 
+                               VerticalOptions="Center" 
+                               HorizontalOptions="Center" />
+                <Label Grid.Row="2" 
+                               VerticalOptions="End"
+                               FontSize="Micro"
+                               Text="Chegando em xx minutos"></Label>
+            </Grid>
+        </Frame>
+
+            <Button
+                    Grid.Row="1"
+                    IsVisible="{Binding Path=IsVisible,Source={x:Reference Info}}"
+                        android:Button.UseDefaultPadding="true"
+                        android:Button.UseDefaultShadow="true"
+                        WidthRequest="32"
+                        HeightRequest="32"
+                        CornerRadius="16"
+                        HorizontalOptions="Center"
+                        VerticalOptions="End"
+                        Margin="0,0,0,0"
+                        BackgroundColor="White"
+                        Text="&#xf00d;"
+                        FontSize="Micro"
+                        Command="{Binding GetActualUserLocationCommand}">
+
+        <Button.FontFamily>
+            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+        </Button.FontFamily>
+    </Button>-->
+
+            <Frame Padding="40" Grid.Row="1">
+                <ListView ItemsSource="{Binding Items}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <StackLayout>
+                                    <Label Text="{Binding .}"></Label>
+                                </StackLayout>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Frame>
 
 
 
-        </Grid>
+
+    </Grid>
 
         <!--Ao exibir card de info do veiculo-->
-        <!--Margin="0,0,5,160"-->
-        <Button
+    <!--Margin="0,0,5,160"-->
+    <Button
                 Grid.Row="1"
                     android:Button.UseDefaultPadding="true"
                     android:Button.UseDefaultShadow="true"
@@ -120,76 +195,14 @@
                     Command="{Binding GetActualUserLocationCommand}"
                     IsEnabled="{Binding IsBusy, Converter={StaticResource negateBinding}}">
 
-            <Button.FontFamily>
-                <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
-            </Button.FontFamily>
-        </Button>
+        <Button.FontFamily>
+            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+        </Button.FontFamily>
+    </Button>
 
-        <!--Hidden-->
-        <Frame Grid.Row="0"
-                   x:Name="Info"
-                   IsVisible="False"
-                   VerticalOptions="End"
-                   HorizontalOptions="CenterAndExpand"
-                   WidthRequest="200"
-                   HeightRequest="90"
-                   Margin="0,0,0,30"
-                   CornerRadius="12"
-                   Padding="20">
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="2*"/>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="2*" />
-                </Grid.RowDefinitions>
 
-                <RelativeLayout Grid.Row="0">
-                    <Label 
-                            HorizontalOptions="Start" 
-                            Margin="0,2"
-                            Text="&#xf207;" >
-                        <Label.FontFamily>
-                            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
-                        </Label.FontFamily>
-                    </Label>
-                    <Label 
-                            VerticalOptions="CenterAndExpand"
-                            HorizontalOptions="EndAndExpand"
-                            Margin="25,0"
-                            Text="LINHA 11 PR"></Label>
-                </RelativeLayout>
-
-                <Label Grid.Row="1" 
-                           Text="IDA - TERMINAL TUDE BASTOS" 
-                           VerticalOptions="Center" 
-                           HorizontalOptions="Center" />
-                <Label Grid.Row="2" 
-                           VerticalOptions="End"
-                           FontSize="Micro"
-                           Text="Chegando em xx minutos"></Label>
-            </Grid>
-        </Frame>
-
-        <Button
-                Grid.Row="1"
-                IsVisible="{Binding Path=IsVisible,Source={x:Reference Info}}"
-                    android:Button.UseDefaultPadding="true"
-                    android:Button.UseDefaultShadow="true"
-                    WidthRequest="32"
-                    HeightRequest="32"
-                    CornerRadius="16"
-                    HorizontalOptions="Center"
-                    VerticalOptions="End"
-                    Margin="0,0,0,0"
-                    BackgroundColor="White"
-                    Text="&#xf00d;"
-                    FontSize="Micro"
-                    Command="{Binding GetActualUserLocationCommand}">
-
-            <Button.FontFamily>
-                <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
-            </Button.FontFamily>
-        </Button>
+    <!--Buscar linha-->
+        
     </Grid>
 </ContentPage>
