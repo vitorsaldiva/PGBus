@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -19,11 +20,21 @@ namespace PGBus.ViewModels
 {
     public class MapPageViewModel : BaseViewModel
     {
+        
         public static Xamarin.Forms.GoogleMaps.Map map;
         private static PiracicabanaService _service { get; set; } = new PiracicabanaService();
         public Task Initialization { get; private set; }
 
+        public ICommand ChangePageStatusCommand { get; set; }
+
         Location OriginCoordinates { get; set; }
+
+        private PageStatusEnum _pageStatusEnum;
+        public PageStatusEnum PageStatusEnum
+        {
+            get => _pageStatusEnum;
+            set { SetProperty(ref _pageStatusEnum, value); }
+        }
 
         private MapSpan _visibleRegion;
         public MapSpan VisibleRegion
@@ -43,8 +54,8 @@ namespace PGBus.ViewModels
             }
         }
 
-        private ObservableCollection<string> _items;
-        public ObservableCollection<string> Items
+        private Dictionary<string, string> _items;
+        public Dictionary<string, string> Items
         {
             get => _items;
             set
@@ -57,6 +68,7 @@ namespace PGBus.ViewModels
         public MoveToRegionRequest MoveToRegionRequest { get; } = new MoveToRegionRequest();
 
         public Command GetActualUserLocationCommand { get { return new Command(async () => await OnCenterMap(OriginCoordinates)); } }
+
 
 
         public MapPageViewModel()
@@ -159,14 +171,14 @@ namespace PGBus.ViewModels
 
         protected async Task InitializeAsync()
         {
-            Items = new ObservableCollection<string>
+            ChangePageStatusCommand = new Command<PageStatusEnum>((param) =>
             {
-                "Item 1",
-                "Item 2",
-                "Item 3",
-                "Item 4",
-                "Item 5"
-            };
+                PageStatusEnum = param;
+            });
+
+
+            Items = _service.LoadLinesId();
+
 
             OriginCoordinates = await GetActualUserLocation();
             OnCenterMap(OriginCoordinates);

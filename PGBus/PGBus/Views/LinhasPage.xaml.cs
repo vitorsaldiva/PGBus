@@ -10,7 +10,7 @@ using Xamarin.Forms.Xaml;
 namespace PGBus.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class LinhasPage : ContentPage
+    public partial class LinhasPage : ListView
     {
         
 
@@ -24,7 +24,6 @@ namespace PGBus.Views
             if (e.Item == null)
                 return;
 
-            await DisplayAlert("Item Tapped", "An item was tapped.", "OK");
 
             //Deselect Item
             ((ListView)sender).SelectedItem = null;

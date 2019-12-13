@@ -11,10 +11,8 @@
              xmlns:Rainbows="clr-namespace:Xamarin.Forms.DebugRainbows;assembly=Xamarin.Forms.DebugRainbows"
              x:Class="PGBus.Views.MapPage"
              xmlns:localViews="clr-namespace:PGBus.Views"
+             xmlns:model="clr-namespace:PGBus.Models"
              Rainbows:DebugRainbow.IsDebug="true">
-
-    <!---->
-
     <ContentPage.Resources>
         <ResourceDictionary>
             <converter:NegateBooleanConverter x:Key="negateBinding" />
@@ -49,9 +47,28 @@
                     <bindings:BindingPinsBehavior Value="{Binding Pins}"/>
                 </maps:Map.Behaviors>
             </maps:Map>
+            
+            <Button 
+                Grid.Row="0"
+                CornerRadius="10"
+                VerticalOptions="EndAndExpand"
+                HorizontalOptions="CenterAndExpand"
+                Margin="20"
+                Padding="5"
+                Text="Selecione a linha"
+                TextColor="White"
+                android:Button.UseDefaultPadding="true"
+                android:Button.UseDefaultShadow="true"
+                BackgroundColor="Orange"
+                WidthRequest="280"
+                HeightRequest="50"
+                Command="{Binding ChangePageStatusCommand}"
+                CommandParameter="{x:Static model:PageStatusEnum.SelectLine}">
+                
+            </Button>
 
 
-            <Frame Grid.Row="0"
+            <!--<Frame Grid.Row="0"
                    HeightRequest="40"
                    WidthRequest="280"
                    CornerRadius="10"
@@ -78,20 +95,23 @@
                         </Label.FontFamily>
                     </Label>
 
-                    <customEntry:CustomEntryRenderer
-                            Grid.Column="1"
-                            Placeholder="Qual linha?" PlaceholderColor="LightGray"
-                            FontSize="Small"
-                            ReturnType="Search"
-                            WidthRequest="180"
-                            IsSpellCheckEnabled="False"
-                            IsTextPredictionEnabled="False"/>
-                </Grid>
-            </Frame>
+                    -->
+            <!--<customEntry:CustomEntryRenderer
+                                    Grid.Column="1"
+                                    Placeholder="Qual linha?" PlaceholderColor="LightGray"
+                                    FontSize="Small"
+                                    ReturnType="Search"
+                                    WidthRequest="180"
+                                    IsSpellCheckEnabled="False"
+                                    IsTextPredictionEnabled="False"/>-->
+            <!--
+                    
+                        </Grid>
+                    </Frame>-->
 
 
-            <!--Hidden-->
-            <!--<Frame Grid.Row="1"
+    <!--Hidden-->
+    <!--<Frame Grid.Row="1"
                        x:Name="Info"
                        IsVisible="True"
                        VerticalOptions="End"
@@ -157,19 +177,15 @@
         </Button.FontFamily>
     </Button>-->
 
-            <Frame Padding="40" Grid.Row="1">
-                <ListView ItemsSource="{Binding Items}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <ViewCell>
-                                <StackLayout>
-                                    <Label Text="{Binding .}"></Label>
-                                </StackLayout>
-                            </ViewCell>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Frame>
+    <localViews:LinhasPage Grid.Row="1" IsVisible="False">
+        <localViews:LinhasPage.Triggers>
+            <DataTrigger TargetType="localViews:LinhasPage"
+                                 Binding="{Binding PageStatusEnum}"
+                                 Value="SelectLine">
+                <Setter Property="IsVisible" Value="True" />
+            </DataTrigger>
+        </localViews:LinhasPage.Triggers>
+    </localViews:LinhasPage>
 
 
 
@@ -177,32 +193,27 @@
     </Grid>
 
         <!--Ao exibir card de info do veiculo-->
-    <!--Margin="0,0,5,160"-->
-    <Button
-                Grid.Row="1"
-                    android:Button.UseDefaultPadding="true"
-                    android:Button.UseDefaultShadow="true"
-                    WidthRequest="50"
-                    HeightRequest="50"
-                    CornerRadius="10"
-                    HorizontalOptions="End"
-                    VerticalOptions="End"
-                    Margin="0,0,5,20"
+        <!--Margin="0,0,5,160"-->
+        <Button
+                    Grid.Row="1"
+                        android:Button.UseDefaultPadding="true"
+                        android:Button.UseDefaultShadow="true"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        CornerRadius="10"
+                        HorizontalOptions="End"
+                        VerticalOptions="End"
+                        Margin="0,0,5,20"
                     
-                    BackgroundColor="White"
-                    Text="&#xf05b;"
-                    FontSize="Medium"
-                    Command="{Binding GetActualUserLocationCommand}"
-                    IsEnabled="{Binding IsBusy, Converter={StaticResource negateBinding}}">
+                        BackgroundColor="White"
+                        Text="&#xf05b;"
+                        FontSize="Medium"
+                        Command="{Binding GetActualUserLocationCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource negateBinding}}">
 
-        <Button.FontFamily>
-            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
-        </Button.FontFamily>
-    </Button>
-
-
-
-    <!--Buscar linha-->
-        
+            <Button.FontFamily>
+                <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+            </Button.FontFamily>
+        </Button>
     </Grid>
 </ContentPage>
