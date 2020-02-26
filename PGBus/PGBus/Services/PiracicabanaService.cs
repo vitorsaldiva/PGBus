@@ -84,26 +84,32 @@ namespace PGBus.Services
             return vehicles;
         }
 
-        public Dictionary<string, string> LoadLinesId()
+        public List<BusStopDescription> LoadLinesId()
         {
             var doc = webPage.Load(url + "/pg_FindLines.php");
 
-            var linksLinhas = new Dictionary<string, string>();
+            var linhas = new List<BusStopDescription>();
 
             doc.DocumentNode.SelectNodes("//*[@id='middle']/a").ToList().ForEach(node =>
             {
-
+                var linha = new BusStopDescription();
                 var linhaCodigo = node.SelectNodes(".//span/strong")?.First()?.InnerText.Split(' ')[1];
+                var linhaDescricao = node.SelectNodes(".//span[2]")?.First()?.InnerText;
                 var link = node.Attributes["href"].Value;
 
                 Uri myUri = new Uri($"{url}/{link}");
                 string idLinha = HttpUtility.ParseQueryString(myUri.Query).Get("idLinha");
 
+                linha.Code = linhaCodigo;
+                linha.LineId = link;
+                linha.Description = linhaDescricao.Length > 70 ? 
+                                linhaDescricao.Substring(0, 70) : linhaDescricao;
 
-                linksLinhas.Add(linhaCodigo, idLinha);
+
+                linhas.Add(linha);
             });
 
-            return linksLinhas;
+            return linhas;
         }
     }
 }

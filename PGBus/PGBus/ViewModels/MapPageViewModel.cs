@@ -54,8 +54,8 @@ namespace PGBus.ViewModels
             }
         }
 
-        private Dictionary<string, string> _items;
-        public Dictionary<string, string> Items
+        private List<BusStopDescription> _items;
+        public List<BusStopDescription> Items
         {
             get => _items;
             set
@@ -111,7 +111,8 @@ namespace PGBus.ViewModels
         protected async Task<ObservableCollection<Pin>> LoadVehicles()
         {
             //linha 94BF
-            _service.LoadLinesId().TryGetValue("94BF", out string idLinha);
+            string idLinha = 
+                _service.LoadLinesId().Where(l => l.Code.Equals("94BF")).FirstOrDefault()?.LineId;
 
             //var vehiclesJson = @"{'prefixo':'2801','lat':-24.011008,'lng':-46.413548, 'sentido':2, 'conteudo':'<span><b>Prefixo:</b> 2801</br><b>Linha: </b>94BF<br><b>Sentido: </b>VOLTA<br><b>Horário: </b>20/08/2019 23:51:56<br></span>'}
             //                ,{'prefixo':'2802','lat':-24.00462,'lng':-46.41322, 'sentido':1, 'conteudo':'<span><b>Prefixo:</b> 2802</br><b>Linha: </b>94BF<br><b>Sentido: </b>IDA<br><b>Horário: </b>20/08/2019 23:51:55<br></span>'}";
@@ -146,7 +147,8 @@ namespace PGBus.ViewModels
         protected async Task<ObservableCollection<Pin>> LoadBusStops()
         {
             //linha 94BF
-            _service.LoadLinesId().TryGetValue("94BF", out string idLinha);
+            string idLinha = 
+                _service.LoadLinesId().Where(l => l.Code.Equals("94BF")).FirstOrDefault()?.LineId;
 
 
             var pontos = _service.LoadBusStops(idLinha);

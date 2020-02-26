@@ -1,16 +1,36 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ListView 
+<StackLayout 
         xmlns="http://xamarin.com/schemas/2014/forms"
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
         x:Class="PGBus.Views.LinhasPage"
-        ItemsSource="{Binding Items}">
-    <ListView.ItemTemplate>
-        <DataTemplate>
-            <ViewCell>
-                <StackLayout>
-                    <Label Text="{Binding Key}" ></Label>
-                </StackLayout>
-            </ViewCell>
-        </DataTemplate>
-    </ListView.ItemTemplate>
-</ListView>
+    VerticalOptions="FillAndExpand" Spacing="0" Padding="0,25,0,65">
+    <Frame>
+        <ListView ItemsSource="{Binding Items}" RowHeight="60">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <FlexLayout Direction="Row"
+                            BackgroundColor="White"
+                            Padding="5,10">
+                            <Label Text="&#xf207;" FontSize="Title" Margin="5,8,5,0">
+                                <Label.FontFamily>
+                                    <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+                                </Label.FontFamily>
+                            </Label>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height=".9*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Label Grid.Row="0" Text="{Binding Code}"></Label>
+                                <Label Grid.Row="1" Text="{Binding Description}" 
+                                   FontSize="Caption"></Label>
+                            </Grid>
+                        </FlexLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Frame>
+
+</StackLayout>

@@ -13,6 +13,8 @@
              xmlns:localViews="clr-namespace:PGBus.Views"
              xmlns:model="clr-namespace:PGBus.Models"
              Rainbows:DebugRainbow.IsDebug="true">
+             <!---->
+    
     <ContentPage.Resources>
         <ResourceDictionary>
             <converter:NegateBooleanConverter x:Key="negateBinding" />
@@ -64,7 +66,13 @@
                 HeightRequest="50"
                 Command="{Binding ChangePageStatusCommand}"
                 CommandParameter="{x:Static model:PageStatusEnum.SelectLine}">
-                
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button"
+                                 Binding="{Binding PageStatusEnum}"
+                                 Value="SelectLine">
+                        <Setter Property="IsVisible" Value="False" />
+                    </DataTrigger>
+                </Button.Triggers>
             </Button>
 
 
@@ -112,15 +120,15 @@
 
     <!--Hidden-->
     <!--<Frame Grid.Row="1"
-                       x:Name="Info"
-                       IsVisible="True"
-                       VerticalOptions="End"
-                       HorizontalOptions="CenterAndExpand"
-                       WidthRequest="200"
-                       HeightRequest="90"
-                       Margin="0,0,0,30"
-                       CornerRadius="12"
-                       Padding="20">
+               x:Name="Info"
+               IsVisible="True"
+               VerticalOptions="End"
+               HorizontalOptions="CenterAndExpand"
+               WidthRequest="200"
+               HeightRequest="90"
+               Margin="0,0,0,30"
+               CornerRadius="12"
+               Padding="20">
 
             <Grid>
                 <Grid.RowDefinitions>
@@ -177,7 +185,7 @@
         </Button.FontFamily>
     </Button>-->
 
-    <localViews:LinhasPage Grid.Row="1" IsVisible="False">
+    <localViews:LinhasPage IsVisible="True">
         <localViews:LinhasPage.Triggers>
             <DataTrigger TargetType="localViews:LinhasPage"
                                  Binding="{Binding PageStatusEnum}"
@@ -187,33 +195,61 @@
         </localViews:LinhasPage.Triggers>
     </localViews:LinhasPage>
 
-
-
-
     </Grid>
-
         <!--Ao exibir card de info do veiculo-->
         <!--Margin="0,0,5,160"-->
         <Button
-                    Grid.Row="1"
-                        android:Button.UseDefaultPadding="true"
-                        android:Button.UseDefaultShadow="true"
-                        WidthRequest="50"
-                        HeightRequest="50"
-                        CornerRadius="10"
-                        HorizontalOptions="End"
-                        VerticalOptions="End"
-                        Margin="0,0,5,20"
-                    
-                        BackgroundColor="White"
-                        Text="&#xf05b;"
-                        FontSize="Medium"
-                        Command="{Binding GetActualUserLocationCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource negateBinding}}">
+                Grid.Row="1"
+                android:Button.UseDefaultPadding="true"
+                android:Button.UseDefaultShadow="true"
+                WidthRequest="50"
+                HeightRequest="50"
+                CornerRadius="10"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,5,20"
+                
+                BackgroundColor="White"
+                Text="&#xf05b;"
+                FontSize="Medium"
+                Command="{Binding GetActualUserLocationCommand}"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource negateBinding}}">
 
             <Button.FontFamily>
                 <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
             </Button.FontFamily>
+            <Button.Triggers>
+                <DataTrigger TargetType="Button" Binding="{Binding PageStatusEnum}"
+                                     Value="SelectLine">
+                    <Setter Property="IsVisible" Value="False" />
+                </DataTrigger>
+            </Button.Triggers>
         </Button>
+
+    <Button
+           Grid.Row="1"
+           IsVisible="False"
+           android:Button.UseDefaultPadding="true"
+           android:Button.UseDefaultShadow="true"
+           WidthRequest="32"
+           HeightRequest="32"
+           CornerRadius="16"
+           HorizontalOptions="Center"
+           VerticalOptions="End"
+           Margin="0,0,0,0"
+           BackgroundColor="White"
+           Text="&#xf00d;"
+           FontSize="Micro">
+
+        <Button.FontFamily>
+            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+        </Button.FontFamily>
+        <Button.Triggers>
+            <DataTrigger TargetType="Button" Binding="{Binding PageStatusEnum}"
+                                     Value="SelectLine">
+                <Setter Property="IsVisible" Value="True" />
+            </DataTrigger>
+        </Button.Triggers>
+    </Button>
     </Grid>
 </ContentPage>

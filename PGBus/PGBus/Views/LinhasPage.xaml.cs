@@ -10,23 +10,13 @@ using Xamarin.Forms.Xaml;
 namespace PGBus.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class LinhasPage : ListView
+    public partial class LinhasPage : StackLayout
     {
         
 
         public LinhasPage()
         {
             InitializeComponent();
-        }
-
-        async void Handle_ItemTapped(object sender, ItemTappedEventArgs e)
-        {
-            if (e.Item == null)
-                return;
-
-
-            //Deselect Item
-            ((ListView)sender).SelectedItem = null;
         }
     }
 }
