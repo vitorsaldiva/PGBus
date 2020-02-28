@@ -20,10 +20,9 @@ namespace PGBus.ViewModels
 {
     public class MapPageViewModel : BaseViewModel
     {
-        
+        public Task Initialization { get; private set; }
         public static Xamarin.Forms.GoogleMaps.Map map;
         private static PiracicabanaService _service { get; set; } = new PiracicabanaService();
-        public Task Initialization { get; private set; }
 
         public ICommand ChangePageStatusCommand { get; set; }
 
@@ -69,6 +68,18 @@ namespace PGBus.ViewModels
 
         public Command GetActualUserLocationCommand { get { return new Command(async () => await OnCenterMap(OriginCoordinates)); } }
 
+        public Command CloseLinesPageCommand
+        {
+            get
+            {
+                return new Command(() =>
+                {
+                    PageStatusEnum = PageStatusEnum.Default;
+                });
+            }
+        }
+
+        public Command UpdateCommand { get; set; }
 
 
         public MapPageViewModel()
@@ -103,7 +114,7 @@ namespace PGBus.ViewModels
             if (location != null)
                 VisibleRegion = MapSpan.FromCenterAndRadius(
                                      new Position(location.Latitude, location.Longitude),
-                                         Distance.FromMeters(50));
+                                         Distance.FromKilometers(2));
 
             MoveToRegionRequest.MoveToRegion(VisibleRegion);
         }
@@ -111,15 +122,8 @@ namespace PGBus.ViewModels
         protected async Task<ObservableCollection<Pin>> LoadVehicles()
         {
             //linha 94BF
-            string idLinha = 
-                _service.LoadLinesId().Where(l => l.Code.Equals("94BF")).FirstOrDefault()?.LineId;
-
-            //var vehiclesJson = @"{'prefixo':'2801','lat':-24.011008,'lng':-46.413548, 'sentido':2, 'conteudo':'<span><b>Prefixo:</b> 2801</br><b>Linha: </b>94BF<br><b>Sentido: </b>VOLTA<br><b>Horário: </b>20/08/2019 23:51:56<br></span>'}
-            //                ,{'prefixo':'2802','lat':-24.00462,'lng':-46.41322, 'sentido':1, 'conteudo':'<span><b>Prefixo:</b> 2802</br><b>Linha: </b>94BF<br><b>Sentido: </b>IDA<br><b>Horário: </b>20/08/2019 23:51:55<br></span>'}";
-
-            //vehiclesJson = vehiclesJson.Insert(0, "[").Insert((vehiclesJson.Length + 1), "]");
-
-            //var vehicles = JsonConvert.DeserializeObject<List<Vehicle>>(vehiclesJson);
+            string idLinha =
+                _service.LoadLinesId().Where(l => l.Code.Equals("CBS")).FirstOrDefault()?.LineId;
 
             var vehicles = _service.LoadVehicles(idLinha);
 
@@ -132,9 +136,9 @@ namespace PGBus.ViewModels
 
                     Type = PinType.Generic,
                     Position = new Position(v.Lat, v.Lng),
-                    ZIndex = 13,
+                    ZIndex = 15,
                     Label = v.Prefixo,
-                    //Icon = BitmapDescriptorFactory.FromBundle(@"bus_stop.png")
+                    Icon = BitmapDescriptorFactory.FromBundle(@"bus.png")
 
                 };
 
@@ -147,8 +151,8 @@ namespace PGBus.ViewModels
         protected async Task<ObservableCollection<Pin>> LoadBusStops()
         {
             //linha 94BF
-            string idLinha = 
-                _service.LoadLinesId().Where(l => l.Code.Equals("94BF")).FirstOrDefault()?.LineId;
+            string idLinha =
+                _service.LoadLinesId().Where(l => l.Code.Equals("CBS")).FirstOrDefault()?.LineId;
 
 
             var pontos = _service.LoadBusStops(idLinha);
@@ -178,6 +182,14 @@ namespace PGBus.ViewModels
                 PageStatusEnum = param;
             });
 
+            UpdateCommand = new Command<List<Position>>(Update);
+
+            Device.StartTimer(TimeSpan.FromSeconds(16), () =>
+            {
+                UpdateCommand.Execute(LoadVehicles().Result.Select(v => v.Position));
+                return true;
+            });
+
 
             Items = _service.LoadLinesId();
 
@@ -193,6 +205,16 @@ namespace PGBus.ViewModels
             foreach (var busPin in await LoadVehicles())
             {
                 Pins.Add(busPin);
+            }
+        }
+
+        async void Update(List<Position> positions)
+        {
+            var pins = map.Pins;
+            for (int i = 0; i < positions.Count - 1; i++)
+            {
+                pins[i].Position = new Position(positions[i].Latitude, positions[i].Longitude);
+                pins[i].Icon = BitmapDescriptorFactory.FromBundle(@"bus.png");
             }
         }
 
