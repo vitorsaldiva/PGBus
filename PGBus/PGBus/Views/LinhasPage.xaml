@@ -5,7 +5,7 @@
         x:Class="PGBus.Views.LinhasPage"
     VerticalOptions="FillAndExpand" Spacing="0" Padding="0,20,0,65">
     <Frame>
-        <ListView ItemsSource="{Binding Items}" RowHeight="60">
+        <ListView ItemsSource="{Binding Items}" RowHeight="60" ItemTapped="ListView_ItemTapped">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>

@@ -10,11 +10,9 @@
              xmlns:converter="clr-namespace:PGBus.Converters;assembly=PGBus"
              xmlns:Rainbows="clr-namespace:Xamarin.Forms.DebugRainbows;assembly=Xamarin.Forms.DebugRainbows"
              x:Class="PGBus.Views.MapPage"
-             xmlns:localViews="clr-namespace:PGBus.Views"
-             xmlns:model="clr-namespace:PGBus.Models"
-             >
+             xmlns:model="clr-namespace:PGBus.Models">
     <!--Rainbows:DebugRainbow.IsDebug="true"-->
-    
+
     <ContentPage.Resources>
         <ResourceDictionary>
             <converter:NegateBooleanConverter x:Key="negateBinding" />
@@ -28,10 +26,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0"
-              Grid.RowSpan="2"
-              ColumnSpacing="0"
-              RowSpacing="0">
+        <Grid Grid.Row="0" Grid.RowSpan="2" ColumnSpacing="0" RowSpacing="0">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
@@ -49,7 +44,7 @@
                     <bindings:BindingPinsBehavior Value="{Binding Pins}"/>
                 </maps:Map.Behaviors>
             </maps:Map>
-            
+
             <Button 
                 Grid.Row="0"
                 CornerRadius="10"
@@ -74,7 +69,6 @@
                     </DataTrigger>
                 </Button.Triggers>
             </Button>
-
 
             <!--<Frame Grid.Row="0"
                    HeightRequest="40"
@@ -118,8 +112,8 @@
                     </Frame>-->
 
 
-    <!--Hidden-->
-    <!--<Frame Grid.Row="1"
+            <!--Hidden-->
+            <!--<Frame Grid.Row="1"
                x:Name="Info"
                IsVisible="True"
                VerticalOptions="End"
@@ -185,17 +179,43 @@
         </Button.FontFamily>
     </Button>-->
 
-    <localViews:LinhasPage IsVisible="False">
-        <localViews:LinhasPage.Triggers>
-            <DataTrigger TargetType="localViews:LinhasPage"
+            <Frame Padding="10,20,10,60" IsVisible="False">
+                <ListView ItemsSource="{Binding Items}" RowHeight="60" ItemTapped="ListView_ItemTapped">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <FlexLayout Direction="Row"
+                            BackgroundColor="White"
+                            Padding="5,10">
+                                    <Label Text="&#xf207;" FontSize="Title" Margin="5,8,5,0">
+                                        <Label.FontFamily>
+                                            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+                                        </Label.FontFamily>
+                                    </Label>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height=".9*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Label Grid.Row="0" Text="{Binding Code}"></Label>
+                                        <Label Grid.Row="1" Text="{Binding Description}" 
+                                   FontSize="Caption"></Label>
+                                    </Grid>
+                                </FlexLayout>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <Frame.Triggers>
+                    <DataTrigger TargetType="Frame"
                                  Binding="{Binding PageStatusEnum}"
                                  Value="SelectLine">
-                <Setter Property="IsVisible" Value="True" />
-            </DataTrigger>
-        </localViews:LinhasPage.Triggers>
-    </localViews:LinhasPage>
+                        <Setter Property="IsVisible" Value="True" />
+                    </DataTrigger>
+                </Frame.Triggers>
+            </Frame>
 
-    </Grid>
+        </Grid>
         <!--Ao exibir card de info do veiculo-->
         <!--Margin="0,0,5,160"-->
         <Button
@@ -237,20 +257,21 @@
            HorizontalOptions="Center"
            VerticalOptions="EndAndExpand"
            Margin="0,0,0,5"
-           BackgroundColor="White"
+           BackgroundColor="Orange"
            Text="&#xf00d;"
-           FontSize="Micro"
+            TextColor="White"
+           FontSize="Small"
            Command="{Binding CloseLinesPageCommand}">
 
-        <Button.FontFamily>
-            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
-        </Button.FontFamily>
-        <Button.Triggers>
-            <DataTrigger TargetType="Button" Binding="{Binding PageStatusEnum}"
+            <Button.FontFamily>
+                <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+            </Button.FontFamily>
+            <Button.Triggers>
+                <DataTrigger TargetType="Button" Binding="{Binding PageStatusEnum}"
                                      Value="SelectLine">
-                <Setter Property="IsVisible" Value="True" />
-            </DataTrigger>
-        </Button.Triggers>
-    </Button>
+                    <Setter Property="IsVisible" Value="True" />
+                </DataTrigger>
+            </Button.Triggers>
+        </Button>
     </Grid>
 </ContentPage>

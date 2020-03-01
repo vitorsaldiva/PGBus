@@ -15,18 +15,19 @@ using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.GoogleMaps;
 using Xamarin.Forms.GoogleMaps.Bindings;
+using Xamarin.Forms.Internals;
 
 namespace PGBus.ViewModels
 {
     public class MapPageViewModel : BaseViewModel
     {
+        Location OriginCoordinates { get; set; }
+
         public Task Initialization { get; private set; }
         public static Xamarin.Forms.GoogleMaps.Map map;
         private static PiracicabanaService _service { get; set; } = new PiracicabanaService();
 
-        public ICommand ChangePageStatusCommand { get; set; }
-
-        Location OriginCoordinates { get; set; }
+        
 
         private PageStatusEnum _pageStatusEnum;
         public PageStatusEnum PageStatusEnum
@@ -68,6 +69,17 @@ namespace PGBus.ViewModels
 
         public Command GetActualUserLocationCommand { get { return new Command(async () => await OnCenterMap(OriginCoordinates)); } }
 
+        public Command ChangePageStatusCommand
+        {
+            get
+            {
+                return new Command<PageStatusEnum>((param) =>
+                {
+                    PageStatusEnum = param;
+                });
+            }
+        }
+
         public Command CloseLinesPageCommand
         {
             get
@@ -78,8 +90,6 @@ namespace PGBus.ViewModels
                 });
             }
         }
-
-        public Command UpdateCommand { get; set; }
 
 
         public MapPageViewModel()
@@ -177,25 +187,28 @@ namespace PGBus.ViewModels
 
         protected async Task InitializeAsync()
         {
-            ChangePageStatusCommand = new Command<PageStatusEnum>((param) =>
-            {
-                PageStatusEnum = param;
-            });
-
-            UpdateCommand = new Command<List<Position>>(Update);
+            OriginCoordinates = await GetActualUserLocation();
+            OnCenterMap(OriginCoordinates);
 
             Device.StartTimer(TimeSpan.FromSeconds(16), () =>
             {
-                UpdateCommand.Execute(LoadVehicles().Result.Select(v => v.Position));
+                var pinsToRemove = map.Pins.Where(p => p.Type.Equals(PinType.Generic)).ToList();
+                var vehicles = LoadVehicles().Result;
+
+                if (vehicles.Count > 0)
+                {
+                    foreach (var pin in pinsToRemove)
+                    {
+                        map.Pins.Remove(pin);
+                    }
+
+                    vehicles.ForEach(p => map.Pins.Add(p));
+                }
+
                 return true;
             });
 
-
             Items = _service.LoadLinesId();
-
-
-            OriginCoordinates = await GetActualUserLocation();
-            OnCenterMap(OriginCoordinates);
 
             foreach (var pin in await LoadBusStops())
             {
@@ -207,17 +220,5 @@ namespace PGBus.ViewModels
                 Pins.Add(busPin);
             }
         }
-
-        async void Update(List<Position> positions)
-        {
-            var pins = map.Pins;
-            for (int i = 0; i < positions.Count - 1; i++)
-            {
-                pins[i].Position = new Position(positions[i].Latitude, positions[i].Longitude);
-                pins[i].Icon = BitmapDescriptorFactory.FromBundle(@"bus.png");
-            }
-        }
-
-
     }
 }

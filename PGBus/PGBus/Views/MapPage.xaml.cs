@@ -46,12 +46,15 @@ namespace PGBus.Views
             map.MapStyle = MapStyle.FromJson(styleFile);
         }
 
+        private void ListView_ItemTapped(object sender, ItemTappedEventArgs e)
+        {
+            var selected = e.Item as BusStopDescription;
+        }
 
         protected override void OnAppearing()
         {
             base.OnAppearing();
-        }
-
-
+        }    
+        
     }
 }
