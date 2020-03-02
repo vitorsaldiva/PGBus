@@ -49,6 +49,8 @@ namespace PGBus.Views
         private void ListView_ItemTapped(object sender, ItemTappedEventArgs e)
         {
             var selected = e.Item as BusStopDescription;
+
+            MessagingCenter.Send(new Message { Value = selected.LineId }, "LineSelected");
         }
 
         protected override void OnAppearing()

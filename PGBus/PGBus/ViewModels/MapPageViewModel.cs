@@ -23,11 +23,11 @@ namespace PGBus.ViewModels
     {
         Location OriginCoordinates { get; set; }
 
+        public string SelectedLineId { get; set; }
+
         public Task Initialization { get; private set; }
         public static Xamarin.Forms.GoogleMaps.Map map;
         private static PiracicabanaService _service { get; set; } = new PiracicabanaService();
-
-        
 
         private PageStatusEnum _pageStatusEnum;
         public PageStatusEnum PageStatusEnum
@@ -95,6 +95,23 @@ namespace PGBus.ViewModels
         public MapPageViewModel()
         {
             Initialization = InitializeAsync();
+
+            MessagingCenter.Subscribe<Message>(this, "LineSelected", message =>
+            {
+                var pins = new List<Pin>();
+                var tasks = new List<Task<ObservableCollection<Pin>>>();
+                SelectedLineId = message?.Value;
+
+                tasks.Add(LoadBusStops(message?.Value));
+                tasks.Add(LoadVehicles(message?.Value));
+
+                Task.WhenAll(tasks).Result.ForEach(task => 
+                {
+                    AddPinsToMap(task);
+                });
+
+                PageStatusEnum = PageStatusEnum.Default;
+            });
         }
 
         protected async Task<Location> GetActualUserLocation()
@@ -129,11 +146,11 @@ namespace PGBus.ViewModels
             MoveToRegionRequest.MoveToRegion(VisibleRegion);
         }
 
-        protected async Task<ObservableCollection<Pin>> LoadVehicles()
+        protected async Task<ObservableCollection<Pin>> LoadVehicles(string lineId)
         {
-            //linha 94BF
             string idLinha =
-                _service.LoadLinesId().Where(l => l.Code.Equals("CBS")).FirstOrDefault()?.LineId;
+                _service.LoadLinesId().Where(l => l.LineId.Equals(lineId))
+                .FirstOrDefault()?.LineId;
 
             var vehicles = _service.LoadVehicles(idLinha);
 
@@ -158,11 +175,11 @@ namespace PGBus.ViewModels
             return listVehicles;
         }
 
-        protected async Task<ObservableCollection<Pin>> LoadBusStops()
+        protected async Task<ObservableCollection<Pin>> LoadBusStops(string lineId)
         {
-            //linha 94BF
             string idLinha =
-                _service.LoadLinesId().Where(l => l.Code.Equals("CBS")).FirstOrDefault()?.LineId;
+                _service.LoadLinesId().Where(l => l.LineId.Equals(lineId))
+                .FirstOrDefault()?.LineId;
 
 
             var pontos = _service.LoadBusStops(idLinha);
@@ -171,14 +188,16 @@ namespace PGBus.ViewModels
 
             pontos.ForEach(p =>
             {
-                listBusStops.Add(new Pin()
+                var busStop = new Pin()
                 {
                     Type = PinType.Place,
                     Position = new Position(p.Lat, p.Lng),
                     ZIndex = 13,
                     Label = p.Codigo,
                     Icon = BitmapDescriptorFactory.FromBundle(@"bus_stop.png")
-                });
+                };
+                listBusStops.Add(busStop);
+
             });
 
             return listBusStops;
@@ -193,7 +212,7 @@ namespace PGBus.ViewModels
             Device.StartTimer(TimeSpan.FromSeconds(16), () =>
             {
                 var pinsToRemove = map.Pins.Where(p => p.Type.Equals(PinType.Generic)).ToList();
-                var vehicles = LoadVehicles().Result;
+                var vehicles = LoadVehicles(SelectedLineId).Result;
 
                 if (vehicles.Count > 0)
                 {
@@ -202,23 +221,21 @@ namespace PGBus.ViewModels
                         map.Pins.Remove(pin);
                     }
 
-                    vehicles.ForEach(p => map.Pins.Add(p));
+                    AddPinsToMap(vehicles);                    
                 }
 
                 return true;
             });
 
             Items = _service.LoadLinesId();
+        }
 
-            foreach (var pin in await LoadBusStops())
+        protected void AddPinsToMap(IList<Pin> pins)
+        {
+            pins.ForEach(pin =>
             {
                 Pins.Add(pin);
-            }
-
-            foreach (var busPin in await LoadVehicles())
-            {
-                Pins.Add(busPin);
-            }
+            });
         }
     }
 }
