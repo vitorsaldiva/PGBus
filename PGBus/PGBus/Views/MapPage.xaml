@@ -185,8 +185,7 @@
                         <DataTemplate>
                             <ViewCell>
                                 <FlexLayout Direction="Row"
-                            BackgroundColor="White"
-                            Padding="5,10">
+                                            Padding="5,10">
                                     <Label Text="&#xf207;" FontSize="Title" Margin="5,8,5,0">
                                         <Label.FontFamily>
                                             <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />

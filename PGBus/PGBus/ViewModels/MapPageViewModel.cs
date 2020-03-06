@@ -102,15 +102,20 @@ namespace PGBus.ViewModels
                 var tasks = new List<Task<ObservableCollection<Pin>>>();
                 SelectedLineId = message?.Value;
 
+
+
                 tasks.Add(LoadBusStops(message?.Value));
                 tasks.Add(LoadVehicles(message?.Value));
+
+                ClearPinsMap();
+                PageStatusEnum = PageStatusEnum.Default;
+
 
                 Task.WhenAll(tasks).Result.ForEach(task => 
                 {
                     AddPinsToMap(task);
                 });
 
-                PageStatusEnum = PageStatusEnum.Default;
             });
         }
 
@@ -237,5 +242,12 @@ namespace PGBus.ViewModels
                 Pins.Add(pin);
             });
         }
+
+        protected void ClearPinsMap()
+        {
+            Pins.Clear();
+        }
+
+        
     }
 }
