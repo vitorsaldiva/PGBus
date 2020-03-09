@@ -111,7 +111,7 @@ namespace PGBus.ViewModels
                 PageStatusEnum = PageStatusEnum.Default;
 
 
-                Task.WhenAll(tasks).Result.ForEach(task => 
+                Task.WhenAll(tasks).Result.ForEach(task =>
                 {
                     AddPinsToMap(task);
                 });
@@ -208,7 +208,6 @@ namespace PGBus.ViewModels
             return listBusStops;
         }
 
-
         protected async Task InitializeAsync()
         {
             OriginCoordinates = await GetActualUserLocation();
@@ -226,7 +225,7 @@ namespace PGBus.ViewModels
                         map.Pins.Remove(pin);
                     }
 
-                    AddPinsToMap(vehicles);                    
+                    AddPinsToMap(vehicles);
                 }
 
                 return true;
@@ -248,6 +247,36 @@ namespace PGBus.ViewModels
             Pins.Clear();
         }
 
-        
+        /// <summary>
+        /// Função para calcular a distância entre duas coordenadas
+        /// </summary>
+        /// <param name="from">Latitude e Longitude do ponto de partida</param>
+        /// <param name="to">Latitude e Longitude do ponto de destino</param>
+        /// <returns></returns>
+        protected double Haversine(Position from, Position to)
+        {
+            const double EarthRadius = 3958.756;
+
+            double difference_lat = DegreesToRadians(to.Latitude - from.Latitude);
+            double difference_lon = DegreesToRadians(to.Longitude - from.Longitude);
+
+            double alpha = Math.Sin(difference_lat / 2) * Math.Sin(difference_lat / 2) +
+                                Math.Cos(DegreesToRadians(from.Latitude)) *
+                                Math.Cos(DegreesToRadians(to.Latitude)) *
+                                Math.Sin(difference_lon / 2) * Math.Sin(difference_lon/ 2);
+
+            return 2 * Math.Atan2(Math.Sqrt(alpha), Math.Sqrt(1 - alpha)) * EarthRadius;
+        }
+
+        /// <summary>
+        /// Função para conversão de graus em radianos
+        /// </summary>
+        /// <param name="degrees">Graus</param>
+        /// <returns></returns>
+        private double DegreesToRadians(double degrees)
+        {
+            return degrees / 180 * Math.PI;
+        }
+
     }
 }
