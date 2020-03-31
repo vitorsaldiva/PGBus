@@ -91,6 +91,14 @@ namespace PGBus.ViewModels
             }
         }
 
+        public Command<PinClickedEventArgs> PinClickedClickedCommand
+        {
+            get
+            {
+                return new Command<PinClickedEventArgs>(async (args) => await PinClickedClicked(args));
+            }
+        }
+
 
         public MapPageViewModel()
         {
@@ -199,7 +207,10 @@ namespace PGBus.ViewModels
                     Position = new Position(p.Lat, p.Lng),
                     ZIndex = 13,
                     Label = p.Codigo,
-                    Icon = BitmapDescriptorFactory.FromBundle(@"bus_stop.png")
+                    Icon = BitmapDescriptorFactory.FromBundle(@"bus_stop.png"),
+                    //TODO: incluir objeto com propriedades customizadas
+                    Tag = new object()
+                    
                 };
                 listBusStops.Add(busStop);
 
@@ -245,6 +256,21 @@ namespace PGBus.ViewModels
         protected void ClearPinsMap()
         {
             Pins.Clear();
+        }
+
+        protected async Task PinClickedClicked(PinClickedEventArgs pinClickedArgs)
+        {
+            //TODO: alterar para apenas quando clicar em Pin do tipo place
+            if (pinClickedArgs.Pin.Type.Equals(PinType.Place))
+            {
+                var vehicles = Pins.Where(v => v.Type.Equals(PinType.Generic));
+                Pin closestVehicle;
+
+                closestVehicle = vehicles.OrderBy(v => Haversine(v.Position, pinClickedArgs.Pin.Position)).FirstOrDefault();
+
+                Pins.Add(pinClickedArgs.Pin); 
+            }
+
         }
 
         /// <summary>
