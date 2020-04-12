@@ -1,16 +1,12 @@
 ﻿using MvvmHelpers;
-using Newtonsoft.Json;
+using PGBus.MapCustomization;
 using PGBus.Models;
 using PGBus.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.GoogleMaps;
@@ -173,15 +169,14 @@ namespace PGBus.ViewModels
             {
                 Pin vehicle = new Pin()
                 {
-
                     Type = PinType.Generic,
                     Position = new Position(v.Lat, v.Lng),
                     ZIndex = 15,
                     Label = v.Prefixo,
-                    Icon = BitmapDescriptorFactory.FromBundle(@"bus.png")
-
+                    Icon = BitmapDescriptorFactory.FromBundle(@"bus.png"),
+                    Tag = new PinAdditionalInfo { Sentido = v.Sentido },
+                    Rotation = -30f
                 };
-
                 listVehicles.Add(vehicle);
             });
 
@@ -194,11 +189,9 @@ namespace PGBus.ViewModels
                 _service.LoadLinesId().Where(l => l.LineId.Equals(lineId))
                 .FirstOrDefault()?.LineId;
 
-
             var pontos = _service.LoadBusStops(idLinha);
 
             var listBusStops = new ObservableCollection<Pin>();
-
             pontos.ForEach(p =>
             {
                 var busStop = new Pin()
@@ -208,12 +201,9 @@ namespace PGBus.ViewModels
                     ZIndex = 13,
                     Label = p.Codigo,
                     Icon = BitmapDescriptorFactory.FromBundle(@"bus_stop.png"),
-                    //TODO: incluir objeto com propriedades customizadas
-                    Tag = new object()
-                    
+                    Tag = new PinAdditionalInfo { Sentido = p.Sentido.ToString() }
                 };
                 listBusStops.Add(busStop);
-
             });
 
             return listBusStops;
@@ -260,15 +250,20 @@ namespace PGBus.ViewModels
 
         protected async Task PinClickedClicked(PinClickedEventArgs pinClickedArgs)
         {
-            //TODO: alterar para apenas quando clicar em Pin do tipo place
             if (pinClickedArgs.Pin.Type.Equals(PinType.Place))
             {
                 var vehicles = Pins.Where(v => v.Type.Equals(PinType.Generic));
                 Pin closestVehicle;
 
-                closestVehicle = vehicles.OrderBy(v => Haversine(v.Position, pinClickedArgs.Pin.Position)).FirstOrDefault();
+                closestVehicle = 
+                    vehicles
+                    .Where(v => ((PinAdditionalInfo)v.Tag).Sentido.Equals(((PinAdditionalInfo)pinClickedArgs.Pin.Tag).Sentido))
+                    .OrderBy(v => Haversine(v.Position, pinClickedArgs.Pin.Position)).FirstOrDefault();
 
-                Pins.Add(pinClickedArgs.Pin); 
+                Pins.Add(pinClickedArgs.Pin);
+
+                var bounds = new Bounds(pinClickedArgs.Pin.Position, closestVehicle.Position);
+                map.MoveToRegion(MapSpan.FromBounds(bounds));
             }
 
         }
@@ -289,7 +284,7 @@ namespace PGBus.ViewModels
             double alpha = Math.Sin(difference_lat / 2) * Math.Sin(difference_lat / 2) +
                                 Math.Cos(DegreesToRadians(from.Latitude)) *
                                 Math.Cos(DegreesToRadians(to.Latitude)) *
-                                Math.Sin(difference_lon / 2) * Math.Sin(difference_lon/ 2);
+                                Math.Sin(difference_lon / 2) * Math.Sin(difference_lon / 2);
 
             return 2 * Math.Atan2(Math.Sqrt(alpha), Math.Sqrt(1 - alpha)) * EarthRadius;
         }

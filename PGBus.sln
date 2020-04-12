@@ -1,13 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30002.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PGBus.Android", "PGBus\PGBus.Android\PGBus.Android.csproj", "{24CE3C36-16B9-426D-AA0C-5961ECF8D88C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PGBus.iOS", "PGBus\PGBus.iOS\PGBus.iOS.csproj", "{7AE072DE-BEE5-46A5-8091-136D88A95B6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PGBus", "PGBus\PGBus\PGBus.csproj", "{E5F42CDD-8B84-4CE5-B5E4-24E1224BF670}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PGBus", "PGBus\PGBus\PGBus.csproj", "{E5F42CDD-8B84-4CE5-B5E4-24E1224BF670}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestClient", "TestClient", "{DE1C4D66-125E-4EF5-AFA6-38AF836C939E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgBus.TestClient", "PgBus.TestClient\PgBus.TestClient.csproj", "{82D466E8-0257-485B-9AC0-0984B9793C71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,9 +77,24 @@ Global
 		{E5F42CDD-8B84-4CE5-B5E4-24E1224BF670}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{E5F42CDD-8B84-4CE5-B5E4-24E1224BF670}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 		{E5F42CDD-8B84-4CE5-B5E4-24E1224BF670}.Release|iPhoneSimulator.Deploy.0 = Release|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Release|iPhone.Build.0 = Release|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{82D466E8-0257-485B-9AC0-0984B9793C71}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{82D466E8-0257-485B-9AC0-0984B9793C71} = {DE1C4D66-125E-4EF5-AFA6-38AF836C939E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {674F9CA9-114F-4698-8A0A-14B33CFD9F3B}
