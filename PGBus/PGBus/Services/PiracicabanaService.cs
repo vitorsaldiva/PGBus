@@ -13,32 +13,46 @@ namespace PGBus.Services
 {
     public class PiracicabanaService : IPiracicabanaService
     {
-        const string url = "https://quantotempofaltapg.piracicabana.com.br";
+        //URL principal
+        private const string url = "https://quantotempofaltapg.piracicabana.com.br";
+
+        //URL secundária, com informações detalhadas dos pontos de parada
+        private const string url_busStop = "https://geopg.piracicabana.com.br/";
+
         private static HtmlWeb webPage = new HtmlWeb();
+        private static HtmlDocument docPage = new HtmlDocument();
 
         public List<BusStop> LoadBusStops(string lineId)
         {
-            var doc = webPage.LoadFromWebAsync($"{url}/pg_mapaLinha.php?idLinha={lineId}").Result;
-            var scriptNode = doc.DocumentNode.SelectNodes("//script[last()]").Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?.FirstOrDefault();
+            var param = new List<KeyValuePair<string, string>>();
+            param.Add(new KeyValuePair<string, string>("idLinha", $"{lineId}"));
 
             var latLngBusStop = new List<BusStop>();
 
-            if (scriptNode != null)
+            using (var response = new HttpClient().PostAsync($"{url_busStop}/consulta_linha.php", new FormUrlEncodedContent(param)).Result)
             {
-                scriptNode?.InnerText
-                        .Replace("\n", string.Empty)
-                        .Replace("\r", string.Empty)
-                        .Replace("\t", string.Empty)
-                        .Replace("{", string.Empty)
-                        .Replace("}", string.Empty)
-                        .Split(';')
-                        .Where(l => !l.StartsWith("function") && l.Contains("ExibePontosLinha"))
-                        .ToList().ForEach(lc =>
-                        {
-                            var coords = Regex.Match(lc, @"(\-?\d+(\.\d+)?),\s*(\-?\d+(\.\d+)?)")?.Value.Split(',');
-                            var stop = new BusStop { Lat = Convert.ToDouble(coords[0]), Lng = Convert.ToDouble(coords[1]) };
-                            latLngBusStop.Add(stop);
-                        }); 
+                if (response.IsSuccessStatusCode)
+                {
+                    docPage.LoadHtml(response.Content.ReadAsStringAsync().Result);
+                    var scriptNode = docPage
+                                        .DocumentNode
+                                        .SelectNodes("//body/div/script")
+                                        .Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?
+                                        .FirstOrDefault();
+
+                    if (scriptNode != null)
+                    {
+                        var jsonPontos = scriptNode?.InnerText
+                                .Replace("\n", string.Empty)
+                                .Replace("\r", string.Empty)
+                                .Replace("\t", string.Empty)
+                                .Split(';')
+                                .Where(l => l.StartsWith("var") && l.Contains("pontos"))
+                                .FirstOrDefault()?.Trim()?.Replace("var pontos = ", "");
+
+                        latLngBusStop = JsonConvert.DeserializeObject<List<BusStop>>(jsonPontos);
+                    }
+                }
             }
 
             return latLngBusStop;
@@ -65,7 +79,6 @@ namespace PGBus.Services
                         .FirstOrDefault(), @"\= \d+$").Value?.Replace("=", "").Trim();
 
                 var vehicle_url = url + $"/parts/update_bus.php";
-
 
                 var param = new List<KeyValuePair<string, string>>();
                 param.Add(new KeyValuePair<string, string>("linha_id", $"{linhaId}"));
