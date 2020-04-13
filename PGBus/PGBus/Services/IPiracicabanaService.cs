@@ -8,6 +8,6 @@ namespace PGBus.Services
     public interface IPiracicabanaService
     {
         List<Vehicle> LoadVehicles(string lineId);
-        List<BusStop> LoadBusStops(string lineId);
+        BusStopAndRoute LoadBusStopsAndRoutes(string lineId);
     }
 }

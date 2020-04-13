@@ -22,6 +22,7 @@ namespace PGBus.ViewModels
         public string SelectedLineId { get; set; }
 
         public Task Initialization { get; private set; }
+
         public static Xamarin.Forms.GoogleMaps.Map map;
         private static PiracicabanaService _service { get; set; } = new PiracicabanaService();
 
@@ -46,9 +47,21 @@ namespace PGBus.ViewModels
             set
             {
                 _pins = value;
-                OnPropertyChanged("Pins");
+                OnPropertyChanged(nameof(Pins));
             }
         }
+
+        private ObservableCollection<Polyline> _polylines;
+        public ObservableCollection<Polyline> Polylines
+        {
+            get => _polylines;
+            set 
+            { 
+                _polylines = value;
+                OnPropertyChanged(nameof(Polylines));
+            }
+        }
+
 
         private List<BusStopDescription> _items;
         public List<BusStopDescription> Items
@@ -105,7 +118,6 @@ namespace PGBus.ViewModels
                 var pins = new List<Pin>();
                 var tasks = new List<Task<ObservableCollection<Pin>>>();
                 SelectedLineId = message?.Value;
-
 
 
                 tasks.Add(LoadBusStops(message?.Value));
@@ -189,10 +201,10 @@ namespace PGBus.ViewModels
                 _service.LoadLinesId().Where(l => l.LineId.Equals(lineId))
                 .FirstOrDefault()?.LineId;
 
-            var pontos = _service.LoadBusStops(idLinha);
+            var pontos = _service.LoadBusStopsAndRoutes(idLinha);
 
             var listBusStops = new ObservableCollection<Pin>();
-            pontos.ForEach(p =>
+            pontos?.BusStops?.ForEach(p =>
             {
                 var busStop = new Pin()
                 {
@@ -205,6 +217,9 @@ namespace PGBus.ViewModels
                 };
                 listBusStops.Add(busStop);
             });
+
+            AddPolylineToMap(CustomPosition.ConvertToPosition(pontos.RotaIda));
+            AddPolylineToMap(CustomPosition.ConvertToPosition(pontos.RotaVolta));
 
             return listBusStops;
         }
@@ -233,6 +248,17 @@ namespace PGBus.ViewModels
             });
 
             Items = _service.LoadLinesId();
+        }
+
+        protected void AddPolylineToMap(IList<Position> positions)
+        {
+            var polyline = new Polyline();
+            positions.ForEach(position => 
+            {
+                polyline.Positions.Add(position);
+            });
+
+            Polylines.Add(polyline);
         }
 
         protected void AddPinsToMap(IList<Pin> pins)

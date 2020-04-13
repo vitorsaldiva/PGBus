@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
+using PGBus.MapCustomization;
 using PGBus.Models;
 
 namespace PGBus.Services
@@ -22,8 +23,10 @@ namespace PGBus.Services
         private static HtmlWeb webPage = new HtmlWeb();
         private static HtmlDocument docPage = new HtmlDocument();
 
-        public List<BusStop> LoadBusStops(string lineId)
+        public BusStopAndRoute LoadBusStopsAndRoutes(string lineId)
         {
+            var busStopsAndRoutes = new BusStopAndRoute();
+
             var param = new List<KeyValuePair<string, string>>();
             param.Add(new KeyValuePair<string, string>("idLinha", $"{lineId}"));
 
@@ -51,11 +54,35 @@ namespace PGBus.Services
                                 .FirstOrDefault()?.Trim()?.Replace("var pontos = ", "");
 
                         latLngBusStop = JsonConvert.DeserializeObject<List<BusStop>>(jsonPontos);
+                        busStopsAndRoutes.BusStops = latLngBusStop;
+
+                        var jsonRotaIda = scriptNode?.InnerText
+                                .Replace("\n", string.Empty)
+                                .Replace("\r", string.Empty)
+                                .Replace("\t", string.Empty)
+                                .Split(';')
+                                .Where(l => l.StartsWith("var") && l.Contains("latlngIda"))
+                                .FirstOrDefault()?.Trim()?.Replace("var latlngIda = ", "");
+
+                        var rotaLinhaIda = JsonConvert.DeserializeObject<List<CustomPosition>>(jsonRotaIda);
+                        busStopsAndRoutes.RotaIda = rotaLinhaIda;
+
+                        var jsonRotaVolta = scriptNode?.InnerText
+                                .Replace("\n", string.Empty)
+                                .Replace("\r", string.Empty)
+                                .Replace("\t", string.Empty)
+                                .Split(';')
+                                .Where(l => l.Trim().StartsWith("var latlngVolta ="))
+                                .FirstOrDefault()?.Trim()?.Replace("var latlngVolta = ", "");
+
+                        var rotaLinhaVolta = JsonConvert.DeserializeObject<List<CustomPosition>>(jsonRotaVolta);
+                        busStopsAndRoutes.RotaVolta = rotaLinhaVolta;
+
                     }
                 }
             }
 
-            return latLngBusStop;
+            return busStopsAndRoutes;
         }
 
         public List<Vehicle> LoadVehicles(string lineId)

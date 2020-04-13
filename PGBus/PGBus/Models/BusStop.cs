@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Xamarin.Forms.GoogleMaps;
 
 namespace PGBus.Models
 {
@@ -13,5 +14,8 @@ namespace PGBus.Models
         public double Lng { get; set; }
         public int Sentido { get; set; }
         public string Conteudo { get; set; } = "";
+
+        public List<Position> PositionsIda { get; set; }
+        public List<Position> PositionsVolta { get; set; }
     }
 }
