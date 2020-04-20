@@ -9,6 +9,7 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using PGBus.MapCustomization;
 using PGBus.Models;
+using Xamarin.Forms.GoogleMaps;
 
 namespace PGBus.Services
 {
@@ -64,7 +65,8 @@ namespace PGBus.Services
                                 .Where(l => l.StartsWith("var") && l.Contains("latlngIda"))
                                 .FirstOrDefault()?.Trim()?.Replace("var latlngIda = ", "");
 
-                        var rotaLinhaIda = JsonConvert.DeserializeObject<List<CustomPosition>>(jsonRotaIda);
+                        var rotaLinhaIda = JsonConvert.DeserializeObject<List<CustomPosition>>(jsonRotaIda)
+                            .Select(cp => new Position(cp.Latitude, cp.Longitude)).ToList();
                         busStopsAndRoutes.RotaIda = rotaLinhaIda;
 
                         var jsonRotaVolta = scriptNode?.InnerText
@@ -75,7 +77,8 @@ namespace PGBus.Services
                                 .Where(l => l.Trim().StartsWith("var latlngVolta ="))
                                 .FirstOrDefault()?.Trim()?.Replace("var latlngVolta = ", "");
 
-                        var rotaLinhaVolta = JsonConvert.DeserializeObject<List<CustomPosition>>(jsonRotaVolta);
+                        var rotaLinhaVolta = JsonConvert.DeserializeObject<List<CustomPosition>>(jsonRotaVolta)
+                            .Select(cp => new Position(cp.Latitude, cp.Longitude)).ToList();
                         busStopsAndRoutes.RotaVolta = rotaLinhaVolta;
 
                     }

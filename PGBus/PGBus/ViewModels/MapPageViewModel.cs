@@ -5,7 +5,10 @@ using PGBus.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -18,6 +21,8 @@ namespace PGBus.ViewModels
     public class MapPageViewModel : BaseViewModel
     {
         Location OriginCoordinates { get; set; }
+
+        private BusStopAndRoute BusStopAndRoute { get; set; }
 
         public string SelectedLineId { get; set; }
 
@@ -108,24 +113,24 @@ namespace PGBus.ViewModels
             }
         }
 
-
         public MapPageViewModel()
         {
             Initialization = InitializeAsync();
 
             MessagingCenter.Subscribe<Message>(this, "LineSelected", message =>
             {
+                ClearPinsMap();
+                ClearPolylines();
+
                 var pins = new List<Pin>();
                 var tasks = new List<Task<ObservableCollection<Pin>>>();
                 SelectedLineId = message?.Value;
 
-
                 tasks.Add(LoadBusStops(message?.Value));
                 tasks.Add(LoadVehicles(message?.Value));
 
-                ClearPinsMap();
+                
                 PageStatusEnum = PageStatusEnum.Default;
-
 
                 Task.WhenAll(tasks).Result.ForEach(task =>
                 {
@@ -201,10 +206,10 @@ namespace PGBus.ViewModels
                 _service.LoadLinesId().Where(l => l.LineId.Equals(lineId))
                 .FirstOrDefault()?.LineId;
 
-            var pontos = _service.LoadBusStopsAndRoutes(idLinha);
+            BusStopAndRoute = _service.LoadBusStopsAndRoutes(idLinha);
 
             var listBusStops = new ObservableCollection<Pin>();
-            pontos?.BusStops?.ForEach(p =>
+            BusStopAndRoute?.BusStops?.ForEach(p =>
             {
                 var busStop = new Pin()
                 {
@@ -218,8 +223,8 @@ namespace PGBus.ViewModels
                 listBusStops.Add(busStop);
             });
 
-            AddPolylineToMap(CustomPosition.ConvertToPosition(pontos.RotaIda));
-            AddPolylineToMap(CustomPosition.ConvertToPosition(pontos.RotaVolta));
+            AddPolylineToMap(BusStopAndRoute.RotaIda);
+            AddPolylineToMap(BusStopAndRoute.RotaVolta);
 
             return listBusStops;
         }
@@ -231,7 +236,9 @@ namespace PGBus.ViewModels
 
             Device.StartTimer(TimeSpan.FromSeconds(16), () =>
             {
-                var pinsToRemove = map.Pins.Where(p => p.Type.Equals(PinType.Generic)).ToList();
+                //TODO: Atualizar rotas do veículo
+                var pinsToRemove = map.Pins.Where(p => p?.Type == (PinType.Generic)).ToList();
+
                 var vehicles = LoadVehicles(SelectedLineId).Result;
 
                 if (vehicles.Count > 0)
@@ -250,15 +257,108 @@ namespace PGBus.ViewModels
             Items = _service.LoadLinesId();
         }
 
+        
+
+        protected async Task PinClickedClicked(PinClickedEventArgs pinClickedArgs)
+        {
+            if (pinClickedArgs.Pin.Type.Equals(PinType.Place))
+            {
+                ClearPolylines();
+
+                var vehicles = Pins.Where(v => v?.Type == (PinType.Generic)).ToList();
+                Pin closestVehicle;
+                var busStopPin = pinClickedArgs.Pin;
+
+                //TODO: Remover outros veiculos além do mais proximo ao ponto selecionado.
+                closestVehicle = 
+                    vehicles
+                    .Where(v => ((PinAdditionalInfo)v.Tag).Sentido.Equals(((PinAdditionalInfo)pinClickedArgs.Pin.Tag).Sentido))
+                    .OrderBy(v => 
+                    Location.CalculateDistance(
+                        v.Position.Latitude, v.Position.Longitude,
+                        busStopPin.Position.Latitude, busStopPin.Position.Longitude, DistanceUnits.Kilometers))
+                    .FirstOrDefault();
+
+                if (closestVehicle != null)
+                {
+                    ClearPinsMap();
+                    Pins.Add(busStopPin);
+
+                    AddPolylineToMap(GetRouteToClosestVehicle(closestVehicle.Position, busStopPin.Position,
+                        ((PinAdditionalInfo)busStopPin.Tag).Sentido == "1" ? BusStopAndRoute?.RotaIda : BusStopAndRoute?.RotaVolta));
+
+                    //TODO: Recuperar informações de tempo restante para veiculo chegar ao local selecionado
+
+                    //TODO: Verificar por que bound não está funcionando...
+                    var bounds = new Bounds(busStopPin.Position, closestVehicle.Position);
+                    map.MoveToRegion(MapSpan.FromBounds(bounds));
+                }
+                else
+                    return;
+            }
+
+        }
+
+        private IList<Position> GetRouteToClosestVehicle(Position from, Position to, List<Position> routes)
+        {
+            var vehicleRoute = new List<Position>();
+
+            /*
+             *  Utiliza a coordenada inicial (lat/lng veículo) para buscar, 
+             *  dentro da lista de coordenadas da rota da linha, a coordenada 
+             *  mais próxima para exibição no mapa
+             */
+            var initialRoutePoint = 
+                routes.OrderBy(p =>
+                    Location.CalculateDistance(latitudeStart:from.Latitude, longitudeStart: from.Longitude,
+                    latitudeEnd: p.Latitude, longitudeEnd: p.Longitude, DistanceUnits.Kilometers))
+                .FirstOrDefault();
+
+            /*
+             *  Utiliza a coordenada final (lat/lng ponto do onibus) para buscar, 
+             *  dentro da lista de coordenadas da rota da linha, a coordenada 
+             *  mais próxima para exibição no mapa
+             */
+            var finalRoutePoint = 
+                routes.OrderBy(p =>
+                    Location.CalculateDistance(latitudeStart: to.Latitude, longitudeStart: to.Longitude, 
+                    latitudeEnd: p.Latitude, longitudeEnd: p.Longitude, DistanceUnits.Kilometers))
+                .FirstOrDefault();
+
+            /*
+             * Seleciona apenas as coordenadas que estejam entre o intervalo entre o ponto inicial e o final
+             * para exibição do polyline
+             */
+            vehicleRoute = routes
+                .Skip(routes.IndexOf(initialRoutePoint))
+                .Take(routes.IndexOf(finalRoutePoint) - routes.IndexOf(initialRoutePoint) + 1)
+                .ToList();
+
+            // Inclui os pontos inicial e final para exibição correta do polyline
+            vehicleRoute.Insert(0, from);
+            vehicleRoute.Add(to);
+
+            return vehicleRoute;
+        }
+
         protected void AddPolylineToMap(IList<Position> positions)
         {
-            var polyline = new Polyline();
-            positions.ForEach(position => 
+            var polyline = new Polyline
+            {
+                StrokeColor = Color.FromHex("e65c00"),
+                StrokeWidth = 5
+            };
+            positions.ForEach(position =>
             {
                 polyline.Positions.Add(position);
             });
 
             Polylines.Add(polyline);
+        }
+
+        private void ClearPolylines()
+        {
+            Polylines.Clear();
         }
 
         protected void AddPinsToMap(IList<Pin> pins)
@@ -272,57 +372,6 @@ namespace PGBus.ViewModels
         protected void ClearPinsMap()
         {
             Pins.Clear();
-        }
-
-        protected async Task PinClickedClicked(PinClickedEventArgs pinClickedArgs)
-        {
-            if (pinClickedArgs.Pin.Type.Equals(PinType.Place))
-            {
-                var vehicles = Pins.Where(v => v.Type.Equals(PinType.Generic));
-                Pin closestVehicle;
-
-                closestVehicle = 
-                    vehicles
-                    .Where(v => ((PinAdditionalInfo)v.Tag).Sentido.Equals(((PinAdditionalInfo)pinClickedArgs.Pin.Tag).Sentido))
-                    .OrderBy(v => Haversine(v.Position, pinClickedArgs.Pin.Position)).FirstOrDefault();
-
-                Pins.Add(pinClickedArgs.Pin);
-
-                var bounds = new Bounds(pinClickedArgs.Pin.Position, closestVehicle.Position);
-                map.MoveToRegion(MapSpan.FromBounds(bounds));
-            }
-
-        }
-
-        /// <summary>
-        /// Função para calcular a distância entre duas coordenadas
-        /// </summary>
-        /// <param name="from">Latitude e Longitude do ponto de partida</param>
-        /// <param name="to">Latitude e Longitude do ponto de destino</param>
-        /// <returns></returns>
-        protected double Haversine(Position from, Position to)
-        {
-            const double EarthRadius = 3958.756;
-
-            double difference_lat = DegreesToRadians(to.Latitude - from.Latitude);
-            double difference_lon = DegreesToRadians(to.Longitude - from.Longitude);
-
-            double alpha = Math.Sin(difference_lat / 2) * Math.Sin(difference_lat / 2) +
-                                Math.Cos(DegreesToRadians(from.Latitude)) *
-                                Math.Cos(DegreesToRadians(to.Latitude)) *
-                                Math.Sin(difference_lon / 2) * Math.Sin(difference_lon / 2);
-
-            return 2 * Math.Atan2(Math.Sqrt(alpha), Math.Sqrt(1 - alpha)) * EarthRadius;
-        }
-
-        /// <summary>
-        /// Função para conversão de graus em radianos
-        /// </summary>
-        /// <param name="degrees">Graus</param>
-        /// <returns></returns>
-        private double DegreesToRadians(double degrees)
-        {
-            return degrees / 180 * Math.PI;
         }
 
     }

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Xamarin.Forms.GoogleMaps;
 
@@ -8,8 +9,14 @@ namespace PGBus.MapCustomization
 {
     public class CustomPosition
     {
+        public CustomPosition(double latitude, double longitude)
+        {
+            Latitude = latitude;
+            Longitude = longitude;
+        }
+
         [JsonProperty(PropertyName = "lat")]
-        public double Latitute 
+        public double Latitude 
         {
             get;
             set;
@@ -20,19 +27,20 @@ namespace PGBus.MapCustomization
             get;
             set;
         }
+    }
 
-
-        public static List<Position> ConvertToPosition(List<CustomPosition> positions)
+    public static class CustomPositionExtensions
+    {
+        public static List<Position> ConvertToPositionList(this IEnumerable<CustomPosition> positions)
         {
             var convertedPosition = new List<Position>();
 
-            positions.ForEach(p =>
+            positions.ToList().ForEach(p =>
             {
-                convertedPosition.Add(new Position(p.Latitute, p.Longitude));
+                convertedPosition.Add(new Position(p.Latitude, p.Longitude));
             });
 
             return convertedPosition;
         }
-
     }
 }
