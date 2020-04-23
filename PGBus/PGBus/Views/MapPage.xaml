@@ -43,7 +43,7 @@
                     <bindings:MoveToRegionBehavior Request="{Binding MoveToRegionRequest}" />
                     <bindings:BindingPinsBehavior Value="{Binding Pins}"/>
                     <bindings:BindingPolylinesBehavior Value="{Binding Polylines}" />
-                    <bindings:PinClickedToCommandBehavior Command="{Binding PinClickedClickedCommand}" />
+                    <bindings:PinClickedToCommandBehavior Command="{Binding PinClickedCommand}" />
                 </maps:Map.Behaviors>
             </maps:Map>
 

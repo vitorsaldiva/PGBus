@@ -20,16 +20,18 @@ namespace PGBus.ViewModels
 {
     public class MapPageViewModel : BaseViewModel
     {
-        Location OriginCoordinates { get; set; }
+        public Task Initialization { get; private set; }
+
+        public static Xamarin.Forms.GoogleMaps.Map map;
+
+        private static PiracicabanaService _service { get; set; } = new PiracicabanaService();
+
+        private Location OriginCoordinates { get; set; }
 
         private BusStopAndRoute BusStopAndRoute { get; set; }
 
         public string SelectedLineId { get; set; }
 
-        public Task Initialization { get; private set; }
-
-        public static Xamarin.Forms.GoogleMaps.Map map;
-        private static PiracicabanaService _service { get; set; } = new PiracicabanaService();
 
         private PageStatusEnum _pageStatusEnum;
         public PageStatusEnum PageStatusEnum
@@ -101,43 +103,24 @@ namespace PGBus.ViewModels
                 return new Command(() =>
                 {
                     PageStatusEnum = PageStatusEnum.Default;
+                    VehicleSelected = string.Empty;
                 });
             }
         }
 
-        public Command<PinClickedEventArgs> PinClickedClickedCommand
+        public Command<PinClickedEventArgs> PinClickedCommand
         {
             get
             {
-                return new Command<PinClickedEventArgs>(async (args) => await PinClickedClicked(args));
+                return new Command<PinClickedEventArgs>(async (args) => await PinClicked(args));
             }
         }
+
+        protected string VehicleSelected;
 
         public MapPageViewModel()
         {
             Initialization = InitializeAsync();
-
-            MessagingCenter.Subscribe<Message>(this, "LineSelected", message =>
-            {
-                ClearPinsMap();
-                ClearPolylines();
-
-                var pins = new List<Pin>();
-                var tasks = new List<Task<ObservableCollection<Pin>>>();
-                SelectedLineId = message?.Value;
-
-                tasks.Add(LoadBusStops(message?.Value));
-                tasks.Add(LoadVehicles(message?.Value));
-
-                
-                PageStatusEnum = PageStatusEnum.Default;
-
-                Task.WhenAll(tasks).Result.ForEach(task =>
-                {
-                    AddPinsToMap(task);
-                });
-
-            });
         }
 
         protected async Task<Location> GetActualUserLocation()
@@ -248,10 +231,35 @@ namespace PGBus.ViewModels
                         map.Pins.Remove(pin);
                     }
 
-                    AddPinsToMap(vehicles);
+                    if (!string.IsNullOrEmpty(VehicleSelected))
+                        AddPinsToMap(vehicles.Where(p => p.Label.Equals(VehicleSelected)).ToList());
+                    else
+                        AddPinsToMap(vehicles);
+
                 }
 
                 return true;
+            });
+
+            MessagingCenter.Subscribe<Message>(this, "LineSelected", message =>
+            {
+                ClearPinsMap();
+                ClearPolylines();
+
+                PageStatusEnum = PageStatusEnum.Default;
+
+                var pins = new List<Pin>();
+                var tasks = new List<Task<ObservableCollection<Pin>>>();
+                SelectedLineId = message?.Value;
+
+                tasks.Add(LoadBusStops(message?.Value));
+                tasks.Add(LoadVehicles(message?.Value));
+
+                Task.WhenAll(tasks).Result.ForEach(task =>
+                {
+                    AddPinsToMap(task);
+                });
+
             });
 
             Items = _service.LoadLinesId();
@@ -259,7 +267,7 @@ namespace PGBus.ViewModels
 
         
 
-        protected async Task PinClickedClicked(PinClickedEventArgs pinClickedArgs)
+        protected async Task PinClicked(PinClickedEventArgs pinClickedArgs)
         {
             if (pinClickedArgs.Pin.Type.Equals(PinType.Place))
             {
@@ -269,7 +277,6 @@ namespace PGBus.ViewModels
                 Pin closestVehicle;
                 var busStopPin = pinClickedArgs.Pin;
 
-                //TODO: Remover outros veiculos além do mais proximo ao ponto selecionado.
                 closestVehicle = 
                     vehicles
                     .Where(v => ((PinAdditionalInfo)v.Tag).Sentido.Equals(((PinAdditionalInfo)pinClickedArgs.Pin.Tag).Sentido))
@@ -283,6 +290,8 @@ namespace PGBus.ViewModels
                 {
                     ClearPinsMap();
                     Pins.Add(busStopPin);
+
+                    VehicleSelected = closestVehicle.Label;
 
                     AddPolylineToMap(GetRouteToClosestVehicle(closestVehicle.Position, busStopPin.Position,
                         ((PinAdditionalInfo)busStopPin.Tag).Sentido == "1" ? BusStopAndRoute?.RotaIda : BusStopAndRoute?.RotaVolta));
