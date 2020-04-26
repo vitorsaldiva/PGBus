@@ -157,6 +157,9 @@ namespace PGBus.ViewModels
 
         protected async Task<ObservableCollection<Pin>> LoadVehicles(string lineId)
         {
+            if (string.IsNullOrEmpty(lineId))
+                return new ObservableCollection<Pin>();
+
             string idLinha =
                 _service.LoadLinesId().Where(l => l.LineId.Equals(lineId))
                 .FirstOrDefault()?.LineId;
@@ -206,8 +209,8 @@ namespace PGBus.ViewModels
                 listBusStops.Add(busStop);
             });
 
-            AddPolylineToMap(BusStopAndRoute.RotaIda);
-            AddPolylineToMap(BusStopAndRoute.RotaVolta);
+            var allRoutes = BusStopAndRoute.RotaVolta.Union(BusStopAndRoute.RotaIda);
+            AddPolylineToMap(allRoutes.ToList());
 
             return listBusStops;
         }
@@ -232,7 +235,11 @@ namespace PGBus.ViewModels
                     }
 
                     if (!string.IsNullOrEmpty(VehicleSelected))
-                        AddPinsToMap(vehicles.Where(p => p.Label.Equals(VehicleSelected)).ToList());
+                    {
+                        var vehicleSelected = vehicles.Where(p => p.Label.Equals(VehicleSelected)).FirstOrDefault();
+                        AddPinsToMap(vehicleSelected);
+                        UpdatePolylineMap(vehicleSelected, Polylines.SelectMany(p => p.Positions).ToList());
+                    }
                     else
                         AddPinsToMap(vehicles);
 
@@ -352,6 +359,7 @@ namespace PGBus.ViewModels
 
         protected void AddPolylineToMap(IList<Position> positions)
         {
+            ClearPolylines();
             var polyline = new Polyline
             {
                 StrokeColor = Color.FromHex("e65c00"),
@@ -365,6 +373,28 @@ namespace PGBus.ViewModels
             Polylines.Add(polyline);
         }
 
+        protected void UpdatePolylineMap(Pin vehiclePoint, IList<Position> positions)
+        {
+            var polylinePositions = Polylines.SelectMany(p => p.Positions);
+            var closestPoint =
+                polylinePositions
+                .OrderBy(p => Location.CalculateDistance(latitudeStart: vehiclePoint.Position.Latitude, longitudeStart: vehiclePoint.Position.Longitude,
+                                                         latitudeEnd: p.Latitude, longitudeEnd: p.Longitude, DistanceUnits.Kilometers)).FirstOrDefault();
+
+            //var polylinesToRemove =
+            //    polylinePositions
+            //      .Skip(polylinePositions.IndexOf(closestPoint))
+            //      .Take(polylinePositions.IndexOf(closestPoint) - polylinePositions.IndexOf(closestPoint) + 1)
+            //      .ToList();
+
+            //TODO: Polyline sendo atualizado de modo reverso. Ajustar
+            var polylinePositionsList = polylinePositions.ToList();
+            polylinePositionsList.RemoveRange(polylinePositionsList.IndexOf(closestPoint), 
+                (polylinePositionsList.Count() - polylinePositionsList.IndexOf(closestPoint)));
+
+            AddPolylineToMap(polylinePositionsList);
+        }
+
         private void ClearPolylines()
         {
             Polylines.Clear();
@@ -376,6 +406,11 @@ namespace PGBus.ViewModels
             {
                 Pins.Add(pin);
             });
+        }
+
+        protected void AddPinsToMap(Pin pin)
+        {
+            Pins.Add(pin);
         }
 
         protected void ClearPinsMap()
