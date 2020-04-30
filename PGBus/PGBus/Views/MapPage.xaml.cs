@@ -50,6 +50,7 @@ namespace PGBus.Views
         {
             var selected = e.Item as BusStopDescription;
 
+            //TODO: Alterar forma de notificação de linha selecionada. MessaginCenter lançando exceções demais
             MessagingCenter.Send(new Message { Value = selected.LineId }, "LineSelected");
         }
 

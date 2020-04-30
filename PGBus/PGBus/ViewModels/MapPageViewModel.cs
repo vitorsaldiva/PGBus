@@ -62,8 +62,8 @@ namespace PGBus.ViewModels
         public ObservableCollection<Polyline> Polylines
         {
             get => _polylines;
-            set 
-            { 
+            set
+            {
                 _polylines = value;
                 OnPropertyChanged(nameof(Polylines));
             }
@@ -172,6 +172,7 @@ namespace PGBus.ViewModels
             {
                 Pin vehicle = new Pin()
                 {
+                    Anchor = new Point(0.5, 0.5),
                     Type = PinType.Generic,
                     Position = new Position(v.Lat, v.Lng),
                     ZIndex = 15,
@@ -199,6 +200,7 @@ namespace PGBus.ViewModels
             {
                 var busStop = new Pin()
                 {
+                    Anchor = new Point(0.5, 0.5),
                     Type = PinType.Place,
                     Position = new Position(p.Lat, p.Lng),
                     ZIndex = 13,
@@ -222,7 +224,6 @@ namespace PGBus.ViewModels
 
             Device.StartTimer(TimeSpan.FromSeconds(16), () =>
             {
-                //TODO: Atualizar rotas do veículo
                 var pinsToRemove = map.Pins.Where(p => p?.Type == (PinType.Generic)).ToList();
 
                 var vehicles = LoadVehicles(SelectedLineId).Result;
@@ -272,7 +273,7 @@ namespace PGBus.ViewModels
             Items = _service.LoadLinesId();
         }
 
-        
+
 
         protected async Task PinClicked(PinClickedEventArgs pinClickedArgs)
         {
@@ -284,10 +285,10 @@ namespace PGBus.ViewModels
                 Pin closestVehicle;
                 var busStopPin = pinClickedArgs.Pin;
 
-                closestVehicle = 
+                closestVehicle =
                     vehicles
                     .Where(v => ((PinAdditionalInfo)v.Tag).Sentido.Equals(((PinAdditionalInfo)pinClickedArgs.Pin.Tag).Sentido))
-                    .OrderBy(v => 
+                    .OrderBy(v =>
                     Location.CalculateDistance(
                         v.Position.Latitude, v.Position.Longitude,
                         busStopPin.Position.Latitude, busStopPin.Position.Longitude, DistanceUnits.Kilometers))
@@ -297,6 +298,7 @@ namespace PGBus.ViewModels
                 {
                     ClearPinsMap();
                     Pins.Add(busStopPin);
+                    Pins.Add(closestVehicle);
 
                     VehicleSelected = closestVehicle.Label;
 
@@ -324,9 +326,9 @@ namespace PGBus.ViewModels
              *  dentro da lista de coordenadas da rota da linha, a coordenada 
              *  mais próxima para exibição no mapa
              */
-            var initialRoutePoint = 
+            var initialRoutePoint =
                 routes.OrderBy(p =>
-                    Location.CalculateDistance(latitudeStart:from.Latitude, longitudeStart: from.Longitude,
+                    Location.CalculateDistance(latitudeStart: from.Latitude, longitudeStart: from.Longitude,
                     latitudeEnd: p.Latitude, longitudeEnd: p.Longitude, DistanceUnits.Kilometers))
                 .FirstOrDefault();
 
@@ -335,9 +337,9 @@ namespace PGBus.ViewModels
              *  dentro da lista de coordenadas da rota da linha, a coordenada 
              *  mais próxima para exibição no mapa
              */
-            var finalRoutePoint = 
+            var finalRoutePoint =
                 routes.OrderBy(p =>
-                    Location.CalculateDistance(latitudeStart: to.Latitude, longitudeStart: to.Longitude, 
+                    Location.CalculateDistance(latitudeStart: to.Latitude, longitudeStart: to.Longitude,
                     latitudeEnd: p.Latitude, longitudeEnd: p.Longitude, DistanceUnits.Kilometers))
                 .FirstOrDefault();
 
@@ -381,16 +383,8 @@ namespace PGBus.ViewModels
                 .OrderBy(p => Location.CalculateDistance(latitudeStart: vehiclePoint.Position.Latitude, longitudeStart: vehiclePoint.Position.Longitude,
                                                          latitudeEnd: p.Latitude, longitudeEnd: p.Longitude, DistanceUnits.Kilometers)).FirstOrDefault();
 
-            //var polylinesToRemove =
-            //    polylinePositions
-            //      .Skip(polylinePositions.IndexOf(closestPoint))
-            //      .Take(polylinePositions.IndexOf(closestPoint) - polylinePositions.IndexOf(closestPoint) + 1)
-            //      .ToList();
-
-            //TODO: Polyline sendo atualizado de modo reverso. Ajustar
             var polylinePositionsList = polylinePositions.ToList();
-            polylinePositionsList.RemoveRange(polylinePositionsList.IndexOf(closestPoint), 
-                (polylinePositionsList.Count() - polylinePositionsList.IndexOf(closestPoint)));
+            polylinePositionsList.RemoveRange(0, polylinePositionsList.IndexOf(closestPoint) - 1);
 
             AddPolylineToMap(polylinePositionsList);
         }
