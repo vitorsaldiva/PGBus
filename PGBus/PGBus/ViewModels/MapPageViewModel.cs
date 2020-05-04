@@ -179,7 +179,8 @@ namespace PGBus.ViewModels
                     Label = v.Prefixo,
                     Icon = BitmapDescriptorFactory.FromBundle(@"bus.png"),
                     Tag = new PinAdditionalInfo { Sentido = v.Sentido },
-                    Rotation = -30f
+                    //TODO: Alterar para que a rotação seja de acordo com a formula GetBearing
+                    Rotation = v.Sentido.ToLower().Contains("1") ? (190f) : (-190f)
                 };
                 listVehicles.Add(vehicle);
             });
@@ -237,9 +238,12 @@ namespace PGBus.ViewModels
 
                     if (!string.IsNullOrEmpty(VehicleSelected))
                     {
+                        var polylinePoints = Polylines.SelectMany(p => p.Positions).ToList();
                         var vehicleSelected = vehicles.Where(p => p.Label.Equals(VehicleSelected)).FirstOrDefault();
+                        UpdatePolylineMap(vehicleSelected, polylinePoints);
+                        vehicleSelected.Rotation += GetBearing(vehicleSelected.Position, polylinePoints.ElementAt(0));
                         AddPinsToMap(vehicleSelected);
-                        UpdatePolylineMap(vehicleSelected, Polylines.SelectMany(p => p.Positions).ToList());
+
                     }
                     else
                         AddPinsToMap(vehicles);
@@ -380,11 +384,16 @@ namespace PGBus.ViewModels
             var polylinePositions = Polylines.SelectMany(p => p.Positions);
             var closestPoint =
                 polylinePositions
-                .OrderBy(p => Location.CalculateDistance(latitudeStart: vehiclePoint.Position.Latitude, longitudeStart: vehiclePoint.Position.Longitude,
-                                                         latitudeEnd: p.Latitude, longitudeEnd: p.Longitude, DistanceUnits.Kilometers)).FirstOrDefault();
+                .OrderBy(p => Location.CalculateDistance(latitudeStart: vehiclePoint.Position.Latitude,
+                                                         longitudeStart: vehiclePoint.Position.Longitude,
+                                                         latitudeEnd: p.Latitude,
+                                                         longitudeEnd: p.Longitude,
+                                                         DistanceUnits.Kilometers)).FirstOrDefault();
 
             var polylinePositionsList = polylinePositions.ToList();
-            polylinePositionsList.RemoveRange(0, polylinePositionsList.IndexOf(closestPoint) - 1);
+            polylinePositionsList
+                .RemoveRange(0, (polylinePositionsList.IndexOf(closestPoint) != 0 ? polylinePositionsList.IndexOf(closestPoint)
+                                                                                                     - 1 : 1));
 
             AddPolylineToMap(polylinePositionsList);
         }
@@ -410,6 +419,28 @@ namespace PGBus.ViewModels
         protected void ClearPinsMap()
         {
             Pins.Clear();
+        }
+
+        private float GetBearing(Position start,
+                                 Position end)
+        {
+            double lat = Math.Abs(start.Latitude - end.Latitude);
+            double lng = Math.Abs(start.Longitude - end.Longitude);
+
+            if (start.Latitude < end.Latitude && start.Longitude < end.Longitude)
+                return (float)RadiansToDegrees(Math.Atan(lng / lat));
+            else if (start.Latitude >= end.Latitude && start.Longitude < end.Longitude)
+                return (float)(90 - RadiansToDegrees(Math.Atan(lng / lat)) + 90);
+            else if (start.Latitude >= end.Latitude && start.Longitude >= end.Longitude)
+                return (float)(RadiansToDegrees(Math.Atan(lng / lat)) + 180);
+            else if (start.Latitude < end.Latitude && start.Longitude >= end.Longitude)
+                return (float)(90 - RadiansToDegrees(Math.Atan(lng / lat)) + 270);
+            return -1;
+        }
+
+        public double RadiansToDegrees(double radians)
+        {
+            return (180 / Math.PI) * radians;
         }
 
     }
