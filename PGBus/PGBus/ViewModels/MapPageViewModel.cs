@@ -30,8 +30,20 @@ namespace PGBus.ViewModels
 
         private BusStopAndRoute BusStopAndRoute { get; set; }
 
-        public string SelectedLineId { get; set; }
+        //public string SelectedLineId { get; set; }
 
+        private BusStopDescription _selectedLineId;
+        public BusStopDescription SelectedLineId
+        {
+            get { return _selectedLineId; }
+            set
+            {
+                SetProperty(ref _selectedLineId, value);
+                if (string.IsNullOrEmpty(_selectedLineId?.LineId))
+                    return;
+                LoadLine(_selectedLineId?.LineId);
+            }
+        }
 
         private PageStatusEnum _pageStatusEnum;
         public PageStatusEnum PageStatusEnum
@@ -44,7 +56,10 @@ namespace PGBus.ViewModels
         public MapSpan VisibleRegion
         {
             get => _visibleRegion;
-            set { SetProperty(ref _visibleRegion, value); }
+            set
+            {
+                SetProperty(ref _visibleRegion, value);
+            }
         }
 
         private ObservableCollection<Pin> _pins;
@@ -227,7 +242,7 @@ namespace PGBus.ViewModels
             {
                 var pinsToRemove = map.Pins.Where(p => p?.Type == (PinType.Generic)).ToList();
 
-                var vehicles = LoadVehicles(SelectedLineId).Result;
+                var vehicles = LoadVehicles(SelectedLineId?.LineId).Result;
 
                 if (vehicles.Count > 0)
                 {
@@ -253,31 +268,27 @@ namespace PGBus.ViewModels
                 return true;
             });
 
-            MessagingCenter.Subscribe<Message>(this, "LineSelected", message =>
-            {
-                ClearPinsMap();
-                ClearPolylines();
-
-                PageStatusEnum = PageStatusEnum.Default;
-
-                var pins = new List<Pin>();
-                var tasks = new List<Task<ObservableCollection<Pin>>>();
-                SelectedLineId = message?.Value;
-
-                tasks.Add(LoadBusStops(message?.Value));
-                tasks.Add(LoadVehicles(message?.Value));
-
-                Task.WhenAll(tasks).Result.ForEach(task =>
-                {
-                    AddPinsToMap(task);
-                });
-
-            });
-
             Items = _service.LoadLinesId();
         }
 
+        private void LoadLine(string lineId)
+        {
+            ClearPinsMap();
+            ClearPolylines();
 
+            PageStatusEnum = PageStatusEnum.Default;
+
+            var pins = new List<Pin>();
+            var tasks = new List<Task<ObservableCollection<Pin>>>();
+
+            tasks.Add(LoadBusStops(lineId));
+            tasks.Add(LoadVehicles(lineId));
+
+            Task.WhenAll(tasks).Result.ForEach(task =>
+            {
+                AddPinsToMap(task);
+            });
+        }
 
         protected async Task PinClicked(PinClickedEventArgs pinClickedArgs)
         {

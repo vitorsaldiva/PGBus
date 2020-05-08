@@ -182,7 +182,9 @@
     </Button>-->
 
             <Frame Padding="10,20,10,60" IsVisible="False">
-                <ListView ItemsSource="{Binding Items}" RowHeight="60" ItemTapped="ListView_ItemTapped">
+                <ListView ItemsSource="{Binding Items}" 
+                          SelectedItem="{Binding SelectedLineId}"
+                          RowHeight="60">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <ViewCell>

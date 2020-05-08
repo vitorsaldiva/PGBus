@@ -46,14 +46,6 @@ namespace PGBus.Views
             map.MapStyle = MapStyle.FromJson(styleFile);
         }
 
-        private void ListView_ItemTapped(object sender, ItemTappedEventArgs e)
-        {
-            var selected = e.Item as BusStopDescription;
-
-            //TODO: Alterar forma de notificação de linha selecionada. MessaginCenter lançando exceções demais
-            MessagingCenter.Send(new Message { Value = selected.LineId }, "LineSelected");
-        }
-
         protected override void OnAppearing()
         {
             base.OnAppearing();
