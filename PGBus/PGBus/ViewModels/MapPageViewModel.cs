@@ -30,8 +30,6 @@ namespace PGBus.ViewModels
 
         private BusStopAndRoute BusStopAndRoute { get; set; }
 
-        //public string SelectedLineId { get; set; }
-
         private BusStopDescription _selectedLineId;
         public BusStopDescription SelectedLineId
         {
@@ -97,8 +95,15 @@ namespace PGBus.ViewModels
         }
 
         public MoveToRegionRequest MoveToRegionRequest { get; } = new MoveToRegionRequest();
+        public AnimateCameraRequest AnimateRequest { get; } = new AnimateCameraRequest();
 
-        public Command GetActualUserLocationCommand { get { return new Command(async () => await OnCenterMap(OriginCoordinates)); } }
+        public Command GetActualUserLocationCommand 
+        { 
+            get 
+            { 
+                return new Command(async () => await OnCenterMap(OriginCoordinates)); 
+            } 
+        }
 
         public Command ChangePageStatusCommand
         {
@@ -292,6 +297,8 @@ namespace PGBus.ViewModels
 
         protected async Task PinClicked(PinClickedEventArgs pinClickedArgs)
         {
+            pinClickedArgs.Handled = true;
+
             if (pinClickedArgs.Pin.Type.Equals(PinType.Place))
             {
                 ClearPolylines();
@@ -302,7 +309,7 @@ namespace PGBus.ViewModels
 
                 closestVehicle =
                     vehicles
-                    .Where(v => ((PinAdditionalInfo)v.Tag).Sentido.Equals(((PinAdditionalInfo)pinClickedArgs.Pin.Tag).Sentido))
+                    .Where(v => ((PinAdditionalInfo)v.Tag).Sentido.Equals(((PinAdditionalInfo)busStopPin.Tag).Sentido))
                     .OrderBy(v =>
                     Location.CalculateDistance(
                         v.Position.Latitude, v.Position.Longitude,
@@ -322,9 +329,11 @@ namespace PGBus.ViewModels
 
                     //TODO: Recuperar informações de tempo restante para veiculo chegar ao local selecionado
 
-                    //TODO: Verificar por que bound não está funcionando...
-                    var bounds = new Bounds(busStopPin.Position, closestVehicle.Position);
-                    map.MoveToRegion(MapSpan.FromBounds(bounds));
+                    var bounds = 
+                        Bounds.FromPositions(new List<Position>{ closestVehicle.Position, busStopPin.Position});
+                    await AnimateRequest
+                            .AnimateCamera(CameraUpdateFactory.NewBounds(bounds, 50),
+                                TimeSpan.FromSeconds(2));
                 }
                 else
                     return;

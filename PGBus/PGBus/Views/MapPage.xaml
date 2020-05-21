@@ -44,6 +44,7 @@
                     <bindings:BindingPinsBehavior Value="{Binding Pins}"/>
                     <bindings:BindingPolylinesBehavior Value="{Binding Polylines}" />
                     <bindings:PinClickedToCommandBehavior Command="{Binding PinClickedCommand}" />
+                    <bindings:AnimateCameraBehavior Request="{Binding AnimateRequest}" />
                 </maps:Map.Behaviors>
             </maps:Map>
 
