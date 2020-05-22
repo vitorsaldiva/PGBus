@@ -20,7 +20,6 @@ namespace PGBus.Droid
         {
             base.OnCreate(savedInstanceState);
             //Iniciando mapa
-            Xamarin.FormsGoogleMaps.Init(this, savedInstanceState);
 
 
         }

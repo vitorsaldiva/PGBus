@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using Android.OS;
 using Xamarin.Essentials;
+using FFImageLoading.Forms.Platform;
 
 namespace PGBus.Droid
 {
@@ -20,8 +21,12 @@ namespace PGBus.Droid
 
             base.OnCreate(savedInstanceState);
 
-            Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            CachedImageRenderer.Init(true);
+            Rg.Plugins.Popup.Popup.Init(this, savedInstanceState);
+            Xamarin.FormsGoogleMaps.Init(this, savedInstanceState);
             Xamarin.FormsGoogleMapsBindings.Init();
+            Xamarin.Forms.Forms.Init(this, savedInstanceState);
+
             Platform.Init(this, savedInstanceState);
 
             var currentWindow = GetCurrentWindow();
@@ -38,6 +43,18 @@ namespace PGBus.Droid
         {
             Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        public override void OnBackPressed()
+        {
+            if (Rg.Plugins.Popup.Popup.SendBackPressed(base.OnBackPressed))
+            {
+                // Do something if there are some pages in the `PopupStack`
+            }
+            else
+            {
+                return;
+            }
         }
 
         public Window GetCurrentWindow()

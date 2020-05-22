@@ -2,6 +2,8 @@
 using PGBus.MapCustomization;
 using PGBus.Models;
 using PGBus.Services;
+using PGBus.Views;
+using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,6 +22,17 @@ namespace PGBus.ViewModels
 {
     public class MapPageViewModel : BaseViewModel
     {
+        private bool isLoading;
+
+        public bool IsLoading
+        {
+            get => isLoading;
+            set 
+            { 
+                SetProperty(ref isLoading, value); 
+            }
+        }
+
         public Task Initialization { get; private set; }
 
         public static Xamarin.Forms.GoogleMaps.Map map;
@@ -37,7 +50,7 @@ namespace PGBus.ViewModels
             set
             {
                 SetProperty(ref _selectedLineId, value);
-                if (string.IsNullOrEmpty(_selectedLineId?.LineId))
+                if (string.IsNullOrEmpty(_selectedLineId?.LineId) || IsLoading)
                     return;
                 LoadLine(_selectedLineId?.LineId);
             }
@@ -205,6 +218,8 @@ namespace PGBus.ViewModels
                 listVehicles.Add(vehicle);
             });
 
+            IsLoading = false;
+
             return listVehicles;
         }
 
@@ -276,8 +291,14 @@ namespace PGBus.ViewModels
             Items = _service.LoadLinesId();
         }
 
-        private void LoadLine(string lineId)
+        private async Task LoadLine(string lineId)
         {
+            var page = new PopUpPage();
+
+            await PopupNavigation.Instance.PushAsync(page);
+
+            IsLoading = true;
+
             ClearPinsMap();
             ClearPolylines();
 
@@ -288,11 +309,15 @@ namespace PGBus.ViewModels
 
             tasks.Add(LoadBusStops(lineId));
             tasks.Add(LoadVehicles(lineId));
+            
 
             Task.WhenAll(tasks).Result.ForEach(task =>
             {
                 AddPinsToMap(task);
             });
+
+            await PopupNavigation.Instance.PopAsync();
+
         }
 
         protected async Task PinClicked(PinClickedEventArgs pinClickedArgs)
@@ -401,6 +426,7 @@ namespace PGBus.ViewModels
 
         protected void UpdatePolylineMap(Pin vehiclePoint, IList<Position> positions)
         {
+            //TODO: Adicionar validação de no mínimo 2 positions
             var polylinePositions = Polylines.SelectMany(p => p.Positions);
             var closestPoint =
                 polylinePositions
