@@ -426,22 +426,25 @@ namespace PGBus.ViewModels
 
         protected void UpdatePolylineMap(Pin vehiclePoint, IList<Position> positions)
         {
-            //TODO: Adicionar validação de no mínimo 2 positions
+            //TODO: Verificar pq veículo continua passando após o ponto no mapa
             var polylinePositions = Polylines.SelectMany(p => p.Positions);
-            var closestPoint =
-                polylinePositions
-                .OrderBy(p => Location.CalculateDistance(latitudeStart: vehiclePoint.Position.Latitude,
-                                                         longitudeStart: vehiclePoint.Position.Longitude,
-                                                         latitudeEnd: p.Latitude,
-                                                         longitudeEnd: p.Longitude,
-                                                         DistanceUnits.Kilometers)).FirstOrDefault();
+            if (polylinePositions.Count() >= 2)
+            {
+                var closestPoint =
+                        polylinePositions
+                        .OrderBy(p => Location.CalculateDistance(latitudeStart: vehiclePoint.Position.Latitude,
+                                                                 longitudeStart: vehiclePoint.Position.Longitude,
+                                                                 latitudeEnd: p.Latitude,
+                                                                 longitudeEnd: p.Longitude,
+                                                                 DistanceUnits.Kilometers)).FirstOrDefault();
 
-            var polylinePositionsList = polylinePositions.ToList();
-            polylinePositionsList
-                .RemoveRange(0, (polylinePositionsList.IndexOf(closestPoint) != 0 ? polylinePositionsList.IndexOf(closestPoint)
-                                                                                                     - 1 : 1));
-
-            AddPolylineToMap(polylinePositionsList);
+                var polylinePositionsList = polylinePositions.ToList();
+                polylinePositionsList
+                    .RemoveRange(0, (polylinePositionsList.IndexOf(closestPoint) != 0 ? polylinePositionsList.IndexOf(closestPoint)
+                                                                                                         - 1 : 1));
+                //TODO: Adicionar animação no mapa (bounds) ao atualizar posição do veículo
+                AddPolylineToMap(polylinePositionsList); 
+            }
         }
 
         private void ClearPolylines()
