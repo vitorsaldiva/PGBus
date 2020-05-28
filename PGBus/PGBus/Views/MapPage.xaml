@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage 
-    
     xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
@@ -18,16 +17,14 @@
             <converter:NegateBooleanConverter x:Key="negateBinding" />
         </ResourceDictionary>
     </ContentPage.Resources>
-        <Grid RowSpacing="0"
+    <Grid RowSpacing="0"
            VerticalOptions="FillAndExpand">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-
         <Grid Grid.Row="0" Grid.RowSpan="2" ColumnSpacing="0" RowSpacing="0">
-
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -55,6 +52,7 @@
                 HorizontalOptions="CenterAndExpand"
                 Margin="20"
                 Padding="5"
+                IsVisible="False"
                 Text="Selecione a linha"
                 TextColor="White"
                 android:Button.UseDefaultPadding="true"
@@ -67,123 +65,89 @@
                 <Button.Triggers>
                     <DataTrigger TargetType="Button"
                                  Binding="{Binding PageStatusEnum}"
-                                 Value="SelectLine">
-                        <Setter Property="IsVisible" Value="False" />
+                                 Value="Default">
+                        <Setter Property="IsVisible" Value="True" />
                     </DataTrigger>
                 </Button.Triggers>
             </Button>
 
-            <!--<Frame Grid.Row="0"
-                   HeightRequest="40"
-                   WidthRequest="280"
-                   CornerRadius="10"
-                   VerticalOptions="StartAndExpand"
-                   HorizontalOptions="CenterAndExpand"
-                   HasShadow="True"
-                   Margin="5,45,5,0"
-                   Padding="5">
 
-                <Grid x:Name="searchLine">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <Label Grid.Column="0" 
-                           Text="&#xf58d;"
-                           VerticalOptions="Center"
-                           HorizontalOptions="Center"
-                           Margin="0">
-
-                        <Label.FontFamily>
-                            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
-                        </Label.FontFamily>
-                    </Label>
-
-                    -->
-            <!--<customEntry:CustomEntryRenderer
-                                    Grid.Column="1"
-                                    Placeholder="Qual linha?" PlaceholderColor="LightGray"
-                                    FontSize="Small"
-                                    ReturnType="Search"
-                                    WidthRequest="180"
-                                    IsSpellCheckEnabled="False"
-                                    IsTextPredictionEnabled="False"/>-->
-            <!--
-                    
-                        </Grid>
-                    </Frame>-->
-
-
-            <!--Hidden-->
-            <!--<Frame Grid.Row="1"
+            <Frame Grid.Row="0"
                x:Name="Info"
-               IsVisible="True"
+               IsVisible="False"
                VerticalOptions="End"
                HorizontalOptions="CenterAndExpand"
-               WidthRequest="200"
+               WidthRequest="300"
                HeightRequest="90"
-               Margin="0,0,0,30"
+               Margin="0,0,0,55"
                CornerRadius="12"
                Padding="20">
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="2*"/>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="2*" />
-                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="2*" />
+                    </Grid.RowDefinitions>
 
-                <RelativeLayout Grid.Row="0">
-                    <Label 
+                    <RelativeLayout Grid.Row="0">
+                        <Label 
                                 HorizontalOptions="Start" 
                                 Margin="0,2"
                                 Text="&#xf207;" >
-                        <Label.FontFamily>
-                            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
-                        </Label.FontFamily>
-                    </Label>
-                    <Label 
+                            <Label.FontFamily>
+                                <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+                            </Label.FontFamily>
+                        </Label>
+                        <Label 
                                 VerticalOptions="CenterAndExpand"
                                 HorizontalOptions="EndAndExpand"
                                 Margin="25,0"
                                 Text="LINHA 11 PR"></Label>
-                </RelativeLayout>
+                    </RelativeLayout>
 
-                <Label Grid.Row="1" 
+                    <Label Grid.Row="1" 
                                Text="IDA - TERMINAL TUDE BASTOS" 
                                VerticalOptions="Center" 
                                HorizontalOptions="Center" />
-                <Label Grid.Row="2" 
+                    <Label Grid.Row="2" 
                                VerticalOptions="End"
                                FontSize="Micro"
-                               Text="Chegando em xx minutos"></Label>
-            </Grid>
-        </Frame>
+                               Text="{Binding RemainingTime}"/>
+                </Grid>
+                <Frame.Triggers>
+                    <DataTrigger TargetType="Frame"
+                                 Binding="{Binding PageStatusEnum}"
+                                 Value="OnRoute">
+                        <Setter Property="IsVisible" Value="True" />
+                    </DataTrigger>
+                </Frame.Triggers>
+            </Frame>
 
             <Button
-                    Grid.Row="1"
+                    Grid.Row="0"
                     IsVisible="{Binding Path=IsVisible,Source={x:Reference Info}}"
                         android:Button.UseDefaultPadding="true"
                         android:Button.UseDefaultShadow="true"
-                        WidthRequest="32"
-                        HeightRequest="32"
+                        WidthRequest="48"
+                        HeightRequest="48"
                         CornerRadius="16"
                         HorizontalOptions="Center"
                         VerticalOptions="End"
                         Margin="0,0,0,0"
-                        BackgroundColor="White"
+                        BackgroundColor="Orange"
                         Text="&#xf00d;"
-                        FontSize="Micro"
-                        Command="{Binding GetActualUserLocationCommand}">
+                        TextColor="White"
+                        FontSize="Small"
+                        Command="{Binding ChangePageStatusCommand}"
+                        CommandParameter="{x:Static model:PageStatusEnum.Default}">
 
-        <Button.FontFamily>
-            <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
-        </Button.FontFamily>
-    </Button>-->
+                <Button.FontFamily>
+                    <OnPlatform x:TypeArguments="x:String" Android="fa-solid-900.ttf#Font Awesome 5 Free Solid" />
+                </Button.FontFamily>
+            </Button>
 
             <Frame x:Name="lineList" Padding="10,20,10,60" IsVisible="False">
-                <!--<ActivityIndicator IsVisible="{Binding IsLoading}" IsRunning="{Binding IsLoading}"/>-->
                 <ListView ItemsSource="{Binding Items}" 
                           SelectedItem="{Binding SelectedLineId}"
                           RowHeight="60">
@@ -222,8 +186,7 @@
             </Frame>
 
         </Grid>
-        <!--Ao exibir card de info do veiculo-->
-        <!--Margin="0,0,5,160"-->
+
         <Button
                 Grid.Row="1"
                 android:Button.UseDefaultPadding="true"
@@ -265,7 +228,7 @@
            Margin="0,0,0,5"
            BackgroundColor="Orange"
            Text="&#xf00d;"
-            TextColor="White"
+           TextColor="White"
            FontSize="Small"
            Command="{Binding CloseLinesPageCommand}">
 

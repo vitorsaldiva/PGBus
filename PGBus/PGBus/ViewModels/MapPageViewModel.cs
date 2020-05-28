@@ -27,9 +27,9 @@ namespace PGBus.ViewModels
         public bool IsLoading
         {
             get => isLoading;
-            set 
-            { 
-                SetProperty(ref isLoading, value); 
+            set
+            {
+                SetProperty(ref isLoading, value);
             }
         }
 
@@ -52,7 +52,9 @@ namespace PGBus.ViewModels
                 SetProperty(ref _selectedLineId, value);
                 if (string.IsNullOrEmpty(_selectedLineId?.LineId) || IsLoading)
                     return;
+                PageStatusEnum = PageStatusEnum.Default;
                 LoadLine(_selectedLineId?.LineId);
+
             }
         }
 
@@ -110,12 +112,12 @@ namespace PGBus.ViewModels
         public MoveToRegionRequest MoveToRegionRequest { get; } = new MoveToRegionRequest();
         public AnimateCameraRequest AnimateRequest { get; } = new AnimateCameraRequest();
 
-        public Command GetActualUserLocationCommand 
-        { 
-            get 
-            { 
-                return new Command(async () => await OnCenterMap(OriginCoordinates)); 
-            } 
+        public Command GetActualUserLocationCommand
+        {
+            get
+            {
+                return new Command(async () => await OnCenterMap(OriginCoordinates));
+            }
         }
 
         public Command ChangePageStatusCommand
@@ -150,6 +152,18 @@ namespace PGBus.ViewModels
         }
 
         protected string VehicleSelected;
+
+        private string remainingTime;
+
+        public string RemainingTime
+        {
+            get => remainingTime;
+            set
+            {
+                SetProperty(ref remainingTime, value);
+            }
+        }
+
 
         public MapPageViewModel()
         {
@@ -274,10 +288,24 @@ namespace PGBus.ViewModels
                     if (!string.IsNullOrEmpty(VehicleSelected))
                     {
                         var polylinePoints = Polylines.SelectMany(p => p.Positions).ToList();
+
                         var vehicleSelected = vehicles.Where(p => p.Label.Equals(VehicleSelected)).FirstOrDefault();
                         UpdatePolylineMap(vehicleSelected, polylinePoints);
+
+
+                        var time =
+                        TimeSpan.FromHours(CalculateRemainingTime(polylinePoints));
+                        RemainingTime = TimeRemainingMessage(time);
+
                         vehicleSelected.Rotation += GetBearing(vehicleSelected.Position, polylinePoints.ElementAt(0));
+
                         AddPinsToMap(vehicleSelected);
+
+                        //var bounds =
+                        //Bounds.FromPositions(new List<Position> { vehicleSelected.Position, busStopPin.Position });
+                        //await AnimateRequest
+                        //        .AnimateCamera(CameraUpdateFactory.NewBounds(bounds, 50),
+                        //            TimeSpan.FromSeconds(2));
 
                     }
                     else
@@ -287,7 +315,7 @@ namespace PGBus.ViewModels
 
                 return true;
             });
-
+            PageStatusEnum = PageStatusEnum.Default;
             Items = _service.LoadLinesId();
         }
 
@@ -302,14 +330,13 @@ namespace PGBus.ViewModels
             ClearPinsMap();
             ClearPolylines();
 
-            PageStatusEnum = PageStatusEnum.Default;
 
             var pins = new List<Pin>();
             var tasks = new List<Task<ObservableCollection<Pin>>>();
 
             tasks.Add(LoadBusStops(lineId));
             tasks.Add(LoadVehicles(lineId));
-            
+
 
             Task.WhenAll(tasks).Result.ForEach(task =>
             {
@@ -323,6 +350,7 @@ namespace PGBus.ViewModels
         protected async Task PinClicked(PinClickedEventArgs pinClickedArgs)
         {
             pinClickedArgs.Handled = true;
+
 
             if (pinClickedArgs.Pin.Type.Equals(PinType.Place))
             {
@@ -349,21 +377,40 @@ namespace PGBus.ViewModels
 
                     VehicleSelected = closestVehicle.Label;
 
-                    AddPolylineToMap(GetRouteToClosestVehicle(closestVehicle.Position, busStopPin.Position,
-                        ((PinAdditionalInfo)busStopPin.Tag).Sentido == "1" ? BusStopAndRoute?.RotaIda : BusStopAndRoute?.RotaVolta));
+                    var route = GetRouteToClosestVehicle(closestVehicle.Position, busStopPin.Position,
+                        ((PinAdditionalInfo)busStopPin.Tag).Sentido == "1" ? BusStopAndRoute?.RotaIda : BusStopAndRoute?.RotaVolta);
+                    AddPolylineToMap(route);
 
                     //TODO: Recuperar informações de tempo restante para veiculo chegar ao local selecionado
+                    var time = TimeSpan.FromHours(CalculateRemainingTime(route));
+                    RemainingTime = TimeRemainingMessage(time);
 
-                    var bounds = 
-                        Bounds.FromPositions(new List<Position>{ closestVehicle.Position, busStopPin.Position});
+                    var bounds =
+                        Bounds.FromPositions(new List<Position> { closestVehicle.Position, busStopPin.Position });
                     await AnimateRequest
                             .AnimateCamera(CameraUpdateFactory.NewBounds(bounds, 50),
                                 TimeSpan.FromSeconds(2));
+
+                    PageStatusEnum = PageStatusEnum.OnRoute;
                 }
                 else
                     return;
             }
 
+        }
+
+        private double CalculateRemainingTime(IList<Position> positions)
+        {
+            const double speed = 40f;
+            double distance = 0;
+            for (int i = 0; i < (positions.Count - 1); i++)
+            {
+                var positionStart = new Location(positions[i].Latitude, positions[i].Longitude);
+                var positionEnd = new Location(positions[i + 1].Latitude, positions[i + 1].Longitude);
+                distance += Location.CalculateDistance(positionStart, positionEnd, DistanceUnits.Kilometers);
+            }
+
+            return distance / speed;
         }
 
         private IList<Position> GetRouteToClosestVehicle(Position from, Position to, List<Position> routes)
@@ -410,41 +457,39 @@ namespace PGBus.ViewModels
 
         protected void AddPolylineToMap(IList<Position> positions)
         {
-            ClearPolylines();
-            var polyline = new Polyline
+            if (positions.Count() >= 2)
             {
-                StrokeColor = Color.FromHex("e65c00"),
-                StrokeWidth = 5
-            };
-            positions.ForEach(position =>
-            {
-                polyline.Positions.Add(position);
-            });
+                ClearPolylines();
+                var polyline = new Polyline
+                {
+                    StrokeColor = Color.FromHex("e65c00"),
+                    StrokeWidth = 5
+                };
+                positions.ForEach(position =>
+                {
+                    polyline.Positions.Add(position);
+                });
 
-            Polylines.Add(polyline);
+                Polylines.Add(polyline);
+            }
         }
 
         protected void UpdatePolylineMap(Pin vehiclePoint, IList<Position> positions)
         {
             //TODO: Verificar pq veículo continua passando após o ponto no mapa
-            var polylinePositions = Polylines.SelectMany(p => p.Positions);
-            if (polylinePositions.Count() >= 2)
-            {
-                var closestPoint =
-                        polylinePositions
-                        .OrderBy(p => Location.CalculateDistance(latitudeStart: vehiclePoint.Position.Latitude,
-                                                                 longitudeStart: vehiclePoint.Position.Longitude,
-                                                                 latitudeEnd: p.Latitude,
-                                                                 longitudeEnd: p.Longitude,
-                                                                 DistanceUnits.Kilometers)).FirstOrDefault();
+            var closestPoint =
+                    positions
+                    .OrderBy(p => Location.CalculateDistance(latitudeStart: vehiclePoint.Position.Latitude,
+                                                             longitudeStart: vehiclePoint.Position.Longitude,
+                                                             latitudeEnd: p.Latitude,
+                                                             longitudeEnd: p.Longitude,
+                                                             DistanceUnits.Kilometers)).FirstOrDefault();
 
-                var polylinePositionsList = polylinePositions.ToList();
-                polylinePositionsList
-                    .RemoveRange(0, (polylinePositionsList.IndexOf(closestPoint) != 0 ? polylinePositionsList.IndexOf(closestPoint)
-                                                                                                         - 1 : 1));
-                //TODO: Adicionar animação no mapa (bounds) ao atualizar posição do veículo
-                AddPolylineToMap(polylinePositionsList); 
-            }
+            var polylinePositionsList = positions.ToList();
+            polylinePositionsList
+                .RemoveRange(0, (polylinePositionsList.IndexOf(closestPoint) != 0 ? polylinePositionsList.IndexOf(closestPoint)
+                                                                                                     - 1 : 1));
+            AddPolylineToMap(polylinePositionsList);
         }
 
         private void ClearPolylines()
@@ -490,6 +535,11 @@ namespace PGBus.ViewModels
         public double RadiansToDegrees(double radians)
         {
             return (180 / Math.PI) * radians;
+        }
+
+        public string TimeRemainingMessage(TimeSpan time)
+        {
+            return $"Chegando em aproximadamente {time.Minutes}:{time.Seconds:00} minutos";
         }
 
     }
