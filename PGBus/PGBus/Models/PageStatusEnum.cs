@@ -6,6 +6,6 @@ namespace PGBus.Models
 {
     public enum PageStatusEnum
     {
-        Default, SelectLine
+        Default, SelectLine, OnRoute
     }
 }
