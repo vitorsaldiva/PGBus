@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
@@ -15,6 +17,7 @@ namespace PGBus.Services
 {
     public class PiracicabanaService : IPiracicabanaService
     {
+        
         //URL principal
         private const string url = "https://quantotempofaltapg.piracicabana.com.br";
 
@@ -23,6 +26,17 @@ namespace PGBus.Services
 
         private static HtmlWeb webPage = new HtmlWeb();
         private static HtmlDocument docPage = new HtmlDocument();
+
+        public PiracicabanaService()
+        {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            webPage.PreRequest += request =>
+            {
+                request.CookieContainer = new CookieContainer();
+                return true;
+            };
+        }
 
         public BusStopAndRoute LoadBusStopsAndRoutes(string lineId)
         {
@@ -90,9 +104,15 @@ namespace PGBus.Services
 
         public List<Vehicle> LoadVehicles(string lineId)
         {
-            var doc = webPage.LoadFromWebAsync(url + $"/pg_mapaLinha.php?idLinha={lineId}").Result;
+            //var doc = webPage.Load(url + $"/pg_mapaLinha.php?idLinha={lineId}");
 
-            var scriptNode = doc.DocumentNode.SelectNodes("//script[last()]").Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?.FirstOrDefault();
+            using(var response = new HttpClient().GetAsync($"{url}/pg_mapaLinha.php?idLinha={lineId}").Result)
+            {
+                if (response.IsSuccessStatusCode)
+                    docPage.LoadHtml(response.Content.ReadAsStringAsync().Result);
+            } 
+
+            var scriptNode = docPage.DocumentNode.SelectNodes("//script[last()]").Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?.FirstOrDefault();
 
             var vehicles = new List<Vehicle>();
 
@@ -129,11 +149,15 @@ namespace PGBus.Services
 
         public List<BusStopDescription> LoadLinesId()
         {
-            var doc = webPage.Load(url + "/pg_FindLines.php");
+            using (var response = new HttpClient().GetAsync($"{url}/pg_FindLines.php").Result)
+            {
+                if (response.IsSuccessStatusCode)
+                    docPage.LoadHtml(response.Content.ReadAsStringAsync().Result);
+            }
 
             var linhas = new List<BusStopDescription>();
 
-            doc.DocumentNode.SelectNodes("//*[@id='middle']/a").ToList().ForEach(node =>
+            docPage.DocumentNode.SelectNodes("//*[@id='middle']/a").ToList().ForEach(node =>
             {
                 var linha = new BusStopDescription();
                 var linhaCodigo = node.SelectNodes(".//span/strong")?.First()?.InnerText.Split(' ')[1];
