@@ -10,6 +10,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Web;
+using System.Xml;
 using Xamarin.Essentials;
 using Xamarin.Forms.GoogleMaps;
 
@@ -18,7 +20,9 @@ namespace PgBus.TestClient
     class Program
     {
         private const string url_busStop = "https://geopg.piracicabana.com.br/";
+        private const string url = "https://quantotempofaltapg.piracicabana.com.br";
         private static HtmlDocument docPage = new HtmlDocument();
+        private static HtmlWeb webPage = new HtmlWeb();
 
         static void Main(string[] args)
         {
@@ -27,71 +31,19 @@ namespace PgBus.TestClient
             //Thread.CurrentThread.CurrentCulture = ci;
             //Thread.CurrentThread.CurrentUICulture = ci;
             //Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator = ",";
-            var lat = -24.0095191;
-            var lng = -46.4064068;
-            var housePosition = new Position(lat, lng);
+            //var lat = -24.0095191;
+            //var lng = -46.4064068;
+            //var housePosition = new Position(lat, lng);
 
-            var busPosition = new Position(-24.00503, -46.41312);
+            //var busPosition = new Position(-24.00503, -46.41312);
 
-            var busStopPosition = new Position(-24.001006, -46.412468);
+            //var busStopPosition = new Position(-24.001006, -46.412468);
 
-            var nearestPlaces = NearestPosition(busPosition, busStopPosition);
+            //var nearestPlaces = NearestPosition(busPosition, busStopPosition);
 
+            //ConsultaLinhas();
 
-            var lineId = "8400d3cd4a790ffbff8f3982c3b34fc0ee8f7e0c";
-
-            var param = new List<KeyValuePair<string, string>>();
-            param.Add(new KeyValuePair<string, string>("idLinha", $"{lineId}"));
-
-            using (var response = new HttpClient().PostAsync($"{url_busStop}/consulta_linha.php", new FormUrlEncodedContent(param)).Result)
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    docPage.LoadHtml(response.Content.ReadAsStringAsync().Result);
-                    var scriptNode = docPage
-                                        .DocumentNode
-                                        .SelectNodes("//body/div/script")
-                                        .Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?
-                                        .FirstOrDefault();
-
-                    var busStops = new List<BusStop>();
-
-                    if (scriptNode != null)
-                    {
-                        var jsonPontos = scriptNode?.InnerText
-                                .Replace("\n", string.Empty)
-                                .Replace("\r", string.Empty)
-                                .Replace("\t", string.Empty)
-                                .Split(';')
-                                .Where(l => l.StartsWith("var") && l.Contains("pontos"))
-                                .FirstOrDefault().Trim().Replace("var pontos = ", "");
-
-                        busStops = JsonConvert.DeserializeObject<List<BusStop>>(jsonPontos);
-
-                        var jsonRotaIda = scriptNode?.InnerText
-                                .Replace("\n", string.Empty)
-                                .Replace("\r", string.Empty)
-                                .Replace("\t", string.Empty)
-                                .Split(';')
-                                .Where(l => l.StartsWith("var") && l.Contains("latlngIda"))
-                                .FirstOrDefault()?.Trim()?.Replace("var latlngIda = ", "");
-
-                        var rotaLinha = JsonConvert.DeserializeObject<List<CustomPosition>>(jsonRotaIda);
-
-                        var jsonRotaVolta = scriptNode?.InnerText
-                                .Replace("\n", string.Empty)
-                                .Replace("\r", string.Empty)
-                                .Replace("\t", string.Empty)
-                                .Split(';')
-                                .Where(l => l.Trim().StartsWith("var latlngVolta ="))
-                                .FirstOrDefault()?.Trim()?.Replace("var latlngVolta = ", "");
-
-                        var rotaLinhaVolta = JsonConvert.DeserializeObject<List<CustomPosition>>(jsonRotaVolta);
-
-                    }
-                }
-            }
-
+            ConsultaVeiculos();
 
         }
 
@@ -1407,6 +1359,142 @@ namespace PgBus.TestClient
         {
             var ret = degrees / 180 * Math.PI;
             return ret;
+        }
+
+        static void ConsultaRotas()
+        {
+            var lineId = "8400d3cd4a790ffbff8f3982c3b34fc0ee8f7e0c";
+
+            var param = new List<KeyValuePair<string, string>>();
+            param.Add(new KeyValuePair<string, string>("idLinha", $"{lineId}"));
+
+            using (var response = new HttpClient().PostAsync($"{url_busStop}/consulta_linha.php",
+                new FormUrlEncodedContent(param)).Result)
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    docPage.LoadHtml(response.Content.ReadAsStringAsync().Result);
+                    var scriptNode = docPage
+                                        .DocumentNode
+                                        .SelectNodes("//body/div/script")
+                                        .Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?
+                                        .FirstOrDefault();
+
+                    var busStops = new List<BusStop>();
+
+                    if (scriptNode != null)
+                    {
+                        var jsonPontos = scriptNode?.InnerText
+                                .Replace("\n", string.Empty)
+                                .Replace("\r", string.Empty)
+                                .Replace("\t", string.Empty)
+                                .Split(';')
+                                .Where(l => l.StartsWith("var") && l.Contains("pontos"))
+                                .FirstOrDefault().Trim().Replace("var pontos = ", "");
+
+                        busStops = JsonConvert.DeserializeObject<List<BusStop>>(jsonPontos);
+
+                        var jsonRotaIda = scriptNode?.InnerText
+                                .Replace("\n", string.Empty)
+                                .Replace("\r", string.Empty)
+                                .Replace("\t", string.Empty)
+                                .Split(';')
+                                .Where(l => l.StartsWith("var") && l.Contains("latlngIda"))
+                                .FirstOrDefault()?.Trim()?.Replace("var latlngIda = ", "");
+
+                        var rotaLinha = JsonConvert.DeserializeObject<List<CustomPosition>>(jsonRotaIda);
+
+                        var jsonRotaVolta = scriptNode?.InnerText
+                                .Replace("\n", string.Empty)
+                                .Replace("\r", string.Empty)
+                                .Replace("\t", string.Empty)
+                                .Split(';')
+                                .Where(l => l.Trim().StartsWith("var latlngVolta ="))
+                                .FirstOrDefault()?.Trim()?.Replace("var latlngVolta = ", "");
+
+                        var rotaLinhaVolta = JsonConvert.DeserializeObject<List<CustomPosition>>(jsonRotaVolta);
+
+                    }
+                }
+            }
+        }
+
+        static void ConsultaLinhas()
+        {
+            HtmlWeb webPage = new HtmlWeb();
+            var url = "https://quantotempofaltapg.piracicabana.com.br";
+
+            var doc = webPage.Load(url + "/pg_FindLines.php");
+
+            var linhas = new List<BusStopDescription>();
+
+            doc.DocumentNode.SelectNodes("//*[@id='middle']/a").ToList().ForEach(node =>
+            {
+                var linha = new BusStopDescription();
+                var linhaCodigo = node.SelectNodes(".//span/strong")?.First()?.InnerText.Split(' ')[1];
+                var linhaDescricao = node.SelectNodes(".//span[2]")?.First()?.InnerText;
+                var link = node.Attributes["href"].Value;
+
+                Uri myUri = new Uri($"{url}/{link}");
+                string idLinha = HttpUtility.ParseQueryString(myUri.Query).Get("idLinha");
+
+                linha.Code = linhaCodigo;
+                linha.LineId = idLinha;
+                linha.Description = linhaDescricao.Length > 70 ?
+                                linhaDescricao.Substring(0, 70) : linhaDescricao;
+
+
+                linhas.Add(linha);
+            });
+
+        }
+
+        static void ConsultaVeiculos()
+        {
+            var lineId = "1eb5238efd93fb6cce61e032ced507b524d87c92";
+
+            var doc = webPage.LoadFromWebAsync(url + $"/pg_mapaLinha.php?idLinha={lineId}").Result;
+
+            var scriptNode = doc.DocumentNode.SelectNodes("//script[last()]").Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?.FirstOrDefault();
+
+            var vehicles = new List<Vehicle>();
+
+            if (scriptNode != null)
+            {
+                var linhaId = Regex.Match(scriptNode.InnerText
+                        .Replace("\n", string.Empty)
+                        .Replace("\r", string.Empty)
+                        .Replace("\t", string.Empty)
+                        .Replace("{", string.Empty)
+                        .Replace("}", string.Empty)
+                        .Split(';')
+                        .Where(l => l.Contains("var_linha") && !l.EndsWith(")"))
+                        .FirstOrDefault(), @"\= \d+$").Value?.Replace("=", "").Trim();
+
+                var vehicle_url = url + $"/parts/update_bus.php";
+
+                var param = new List<KeyValuePair<string, string>>();
+                param.Add(new KeyValuePair<string, string>("linha_id", $"{linhaId}"));
+
+                using (var response = new HttpClient().PostAsync(vehicle_url, new FormUrlEncodedContent(param)).Result)
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var json = response.Content.ReadAsStringAsync().Result;
+                        json = json.Insert(0, "[").Insert((json.Length + 1), "]");
+                        vehicles = JsonConvert.DeserializeObject<List<Vehicle>>(json);
+                    }
+                }
+
+                vehicles.ForEach(v =>
+                {
+                    var html = new HtmlDocument();
+                    html.LoadHtml(v.Conteudo);
+                    var codigo = html.DocumentNode.SelectNodes("//span/b[2]/following-sibling::text()").FirstOrDefault()?.InnerHtml;
+                    var destino = html.DocumentNode.SelectNodes("//span/b[2]/following-sibling::text()").FirstOrDefault()?.InnerHtml;
+                });
+            }
+
         }
     }
 }
