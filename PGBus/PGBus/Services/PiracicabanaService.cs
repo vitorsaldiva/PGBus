@@ -30,12 +30,6 @@ namespace PGBus.Services
         public PiracicabanaService()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-            webPage.PreRequest += request =>
-            {
-                request.CookieContainer = new CookieContainer();
-                return true;
-            };
         }
 
         public BusStopAndRoute LoadBusStopsAndRoutes(string lineId)
@@ -104,15 +98,13 @@ namespace PGBus.Services
 
         public List<Vehicle> LoadVehicles(string lineId)
         {
-            //var doc = webPage.Load(url + $"/pg_mapaLinha.php?idLinha={lineId}");
-
             using(var response = new HttpClient().GetAsync($"{url}/pg_mapaLinha.php?idLinha={lineId}").Result)
             {
                 if (response.IsSuccessStatusCode)
                     docPage.LoadHtml(response.Content.ReadAsStringAsync().Result);
             } 
 
-            var scriptNode = docPage.DocumentNode.SelectNodes("//script[last()]").Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?.FirstOrDefault();
+            var scriptNode = docPage?.DocumentNode.SelectNodes("//script[last()]").Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?.FirstOrDefault();
 
             var vehicles = new List<Vehicle>();
 
