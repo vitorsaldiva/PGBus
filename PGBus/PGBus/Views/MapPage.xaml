@@ -103,11 +103,11 @@
                                 VerticalOptions="CenterAndExpand"
                                 HorizontalOptions="EndAndExpand"
                                 Margin="25,0"
-                                Text="LINHA 11 PR"></Label>
+                                Text="{Binding LineIdDescription}"></Label>
                     </RelativeLayout>
 
                     <Label Grid.Row="1" 
-                               Text="IDA - TERMINAL TUDE BASTOS" 
+                               Text="{Binding LineDestination}" 
                                VerticalOptions="Center" 
                                HorizontalOptions="Center" />
                     <Label Grid.Row="2" 
