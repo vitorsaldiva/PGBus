@@ -1,4 +1,5 @@
-﻿using MvvmHelpers;
+﻿using HtmlAgilityPack;
+using MvvmHelpers;
 using PGBus.MapCustomization;
 using PGBus.Models;
 using PGBus.Services;
@@ -154,7 +155,6 @@ namespace PGBus.ViewModels
         protected string VehicleSelected;
 
         private string remainingTime;
-
         public string RemainingTime
         {
             get => remainingTime;
@@ -163,6 +163,23 @@ namespace PGBus.ViewModels
                 SetProperty(ref remainingTime, value);
             }
         }
+
+        private string lineIdDescription;
+        public string LineIdDescription
+        {
+            get { return lineIdDescription; }
+            set { SetProperty(ref lineIdDescription, value); }
+        }
+
+        private string lineDestination;
+        public string LineDestination
+        {
+            get { return lineDestination; }
+            set { SetProperty(ref lineDestination, value); }
+        }
+
+
+
 
 
         public MapPageViewModel()
@@ -217,6 +234,11 @@ namespace PGBus.ViewModels
 
             vehicles.ForEach(v =>
             {
+                var html = new HtmlDocument();
+                html.LoadHtml(v.Conteudo);
+                var codigo = 
+                    html.DocumentNode.SelectNodes("//span/b[2]/following-sibling::text()").FirstOrDefault()?.InnerHtml;
+
                 Pin vehicle = new Pin()
                 {
                     Anchor = new Point(0.5, 0.5),
@@ -225,7 +247,9 @@ namespace PGBus.ViewModels
                     ZIndex = 15,
                     Label = v.Prefixo,
                     Icon = BitmapDescriptorFactory.FromBundle(@"bus.png"),
-                    Tag = new PinAdditionalInfo { Sentido = v.Sentido },
+                    Tag = 
+                        new PinAdditionalInfo 
+                            { Sentido = v.Sentido, CodigoLinha = codigo, Destino = SelectedLineId?.Description },
                     //TODO: Alterar para que a rotação seja de acordo com a formula GetBearing
                     Rotation = v.Sentido.ToLower().Contains("1") ? (190f) : (-190f)
                 };
@@ -384,6 +408,8 @@ namespace PGBus.ViewModels
                     //TODO: Recuperar informações de tempo restante para veiculo chegar ao local selecionado
                     var time = TimeSpan.FromHours(CalculateRemainingTime(route));
                     RemainingTime = TimeRemainingMessage(time);
+
+                    //LineIdDescription = closestVehicle.
 
                     var bounds =
                         Bounds.FromPositions(new List<Position> { closestVehicle.Position, busStopPin.Position });
