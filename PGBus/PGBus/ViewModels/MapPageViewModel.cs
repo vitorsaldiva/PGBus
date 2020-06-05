@@ -320,6 +320,10 @@ namespace PGBus.ViewModels
                         var time =
                         TimeSpan.FromHours(CalculateRemainingTime(polylinePoints));
                         RemainingTime = TimeRemainingMessage(time);
+                        LineIdDescription = ((PinAdditionalInfo)vehicleSelected?.Tag)?.CodigoLinha;
+                        LineDestination = ((PinAdditionalInfo)vehicleSelected?.Tag).Sentido.Equals("2") ?
+                                        ((PinAdditionalInfo)vehicleSelected?.Tag)?.Destino?.Split('/').FirstOrDefault() :
+                                        ((PinAdditionalInfo)vehicleSelected?.Tag)?.Destino?.Split('/').LastOrDefault();
 
                         vehicleSelected.Rotation += GetBearing(vehicleSelected.Position, polylinePoints.ElementAt(0));
 
@@ -405,11 +409,12 @@ namespace PGBus.ViewModels
                         ((PinAdditionalInfo)busStopPin.Tag).Sentido == "1" ? BusStopAndRoute?.RotaIda : BusStopAndRoute?.RotaVolta);
                     AddPolylineToMap(route);
 
-                    //TODO: Recuperar informações de tempo restante para veiculo chegar ao local selecionado
                     var time = TimeSpan.FromHours(CalculateRemainingTime(route));
                     RemainingTime = TimeRemainingMessage(time);
-
-                    //LineIdDescription = closestVehicle.
+                    LineIdDescription = ((PinAdditionalInfo)closestVehicle?.Tag)?.CodigoLinha;
+                    LineDestination = ((PinAdditionalInfo)closestVehicle?.Tag).Sentido.Equals("2") ?
+                                    ((PinAdditionalInfo)closestVehicle?.Tag)?.Destino?.Split('/').FirstOrDefault() :
+                                    ((PinAdditionalInfo)closestVehicle?.Tag)?.Destino?.Split('/').LastOrDefault();
 
                     var bounds =
                         Bounds.FromPositions(new List<Position> { closestVehicle.Position, busStopPin.Position });
