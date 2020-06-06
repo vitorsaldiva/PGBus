@@ -163,6 +163,7 @@ namespace PGBus.Services
                 linha.LineId = idLinha;
                 linha.Description = linhaDescricao.Length > 70 ? 
                                 linhaDescricao.Substring(0, 70) : linhaDescricao;
+                linha.FullDescription = linhaDescricao;
 
 
                 linhas.Add(linha);
