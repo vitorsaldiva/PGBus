@@ -23,6 +23,7 @@ namespace PGBus.ViewModels
 {
     public class MapPageViewModel : BaseViewModel
     {
+        private const double MinimumDistance = 0.01f;
         private bool isLoading;
 
         public bool IsLoading
@@ -137,6 +138,8 @@ namespace PGBus.ViewModels
             PageStatusEnum = param;
             ClearPinsMap();
             ClearPolylines();
+            VehicleSelected = string.Empty;
+            SelectedLineId = null;
             await OnCenterMap(OriginCoordinates);
         }
 
@@ -147,8 +150,6 @@ namespace PGBus.ViewModels
                 return new Command(() =>
                 {
                     PageStatusEnum = PageStatusEnum.Default;
-                    VehicleSelected = string.Empty;
-                    SelectedLineId = null;
                 });
             }
         }
@@ -309,11 +310,12 @@ namespace PGBus.ViewModels
            {
                Device.BeginInvokeOnMainThread(async () =>
                    {
-                       var pinsToRemove = map.Pins.Where(p => p?.Type == (PinType.Generic)).ToList();
+                       var pinsToRemove = map.Pins?.Where(p => p?.Type == (PinType.Generic)).ToList();
 
                        var vehicles = LoadVehicles(SelectedLineId?.LineId).Result;
 
-                       if (vehicles.Count > 0)
+                       //TODO: Ajustar o que fazer quando não encontrar nenhum veículo
+                       if (vehicles?.Count > 0)
                        {
                            foreach (var pin in pinsToRemove)
                            {
@@ -325,26 +327,26 @@ namespace PGBus.ViewModels
                                var polylinePoints = Polylines.SelectMany(p => p.Positions).ToList();
 
                                var vehicleSelected = vehicles.Where(p => p.Label.Equals(VehicleSelected)).FirstOrDefault();
-                               UpdatePolylineMap(vehicleSelected, polylinePoints);
-
 
                                var time =
                                 TimeSpan.FromHours(CalculateRemainingTime(polylinePoints));
-                               RemainingTime = TimeRemainingMessage(time);
-                               LineIdDescription = ((PinAdditionalInfo)vehicleSelected?.Tag)?.CodigoLinha;
-                               LineDestination = ((PinAdditionalInfo)vehicleSelected?.Tag).Sentido.Equals("2") ?
-                                                ((PinAdditionalInfo)vehicleSelected?.Tag)?.Destino?.Split('/').FirstOrDefault() :
-                                                ((PinAdditionalInfo)vehicleSelected?.Tag)?.Destino?.Split('/').LastOrDefault();
 
+                               VehicleStatusMessage(TimeRemainingMessage(time), vehicleSelected);
+
+                               //TODO: Após veículo chegar ao ponto, exception ao set bearing
                                vehicleSelected.Rotation += GetBearing(vehicleSelected.Position, polylinePoints.ElementAt(0));
 
-                               if (Polylines?.FirstOrDefault()?.Positions.Count > 2)
+                               var busStopPin = Pins.Where(p => p?.Type == (PinType.Place)).FirstOrDefault();
+                               var startLocation = new Location { Latitude = busStopPin.Position.Latitude, Longitude = busStopPin.Position.Longitude };
+                               var endLocation = new Location { Latitude = vehicleSelected.Position.Latitude, Longitude = vehicleSelected.Position.Longitude };
+                               if (Location.CalculateDistance(startLocation, endLocation, DistanceUnits.Kilometers) >= MinimumDistance)
                                {
-                                   //TODO: Demora para parar de atualizar quando passa pelo veículo
+                                   UpdatePolylineMap(vehicleSelected, polylinePoints);
                                    AddPinsToMap(vehicleSelected);
-                                   var busStopPin = Pins.Where(p => p?.Type == (PinType.Place)).FirstOrDefault();
                                    await UpdateCamera(new List<Position> { vehicleSelected.Position, busStopPin.Position });
                                }
+                               else
+                                   VehicleSelected = string.Empty;
 
                            }
                            else
@@ -363,7 +365,7 @@ namespace PGBus.ViewModels
             var bounds =
                  Bounds.FromPositions(positions);
             await AnimateRequest
-                     .AnimateCamera(CameraUpdateFactory.NewBounds(bounds, 150),
+                     .AnimateCamera(CameraUpdateFactory.NewBounds(bounds, 175),
                          TimeSpan.FromSeconds(2));
         }
 
@@ -430,11 +432,7 @@ namespace PGBus.ViewModels
                     AddPolylineToMap(route);
 
                     var time = TimeSpan.FromHours(CalculateRemainingTime(route));
-                    RemainingTime = TimeRemainingMessage(time);
-                    LineIdDescription = ((PinAdditionalInfo)closestVehicle?.Tag)?.CodigoLinha;
-                    LineDestination = ((PinAdditionalInfo)closestVehicle?.Tag).Sentido.Equals("2") ?
-                                    ((PinAdditionalInfo)closestVehicle?.Tag)?.Destino?.Split('/').FirstOrDefault() :
-                                    ((PinAdditionalInfo)closestVehicle?.Tag)?.Destino?.Split('/').LastOrDefault();
+                    VehicleStatusMessage(TimeRemainingMessage(time), closestVehicle);
 
                     await UpdateCamera(new List<Position> { closestVehicle.Position, busStopPin.Position });
 
@@ -504,9 +502,9 @@ namespace PGBus.ViewModels
 
         protected void AddPolylineToMap(IList<Position> positions)
         {
+            ClearPolylines();
             if (positions.Count() >= 2)
             {
-                ClearPolylines();
                 var polyline = new Polyline
                 {
                     StrokeColor = Color.FromHex("e65c00"),
@@ -523,10 +521,6 @@ namespace PGBus.ViewModels
 
         protected void UpdatePolylineMap(Pin vehiclePoint, IList<Position> positions)
         {
-            /*
-             * TODO: Não atualizando corretamente os polylines
-             * demorando para remover ultimo trecho
-             */
             var closestPoint =
                     positions
                     .OrderBy(p => Location.CalculateDistance(latitudeStart: vehiclePoint.Position.Latitude,
@@ -537,9 +531,18 @@ namespace PGBus.ViewModels
 
             var polylinePositionsList = positions.ToList();
             polylinePositionsList
-                .RemoveRange(0, (polylinePositionsList.IndexOf(closestPoint) != 0 ? polylinePositionsList.IndexOf(closestPoint)
-                                                                                                     - 1 : 1));
+                    .RemoveRange(0, (polylinePositionsList.IndexOf(closestPoint) != 0 ? polylinePositionsList.IndexOf(closestPoint)
+                                                                                                         - 1 : 1));
+            if (polylinePositionsList.Count <= 3)
+                ClearPolylines(out polylinePositionsList);
+
             AddPolylineToMap(polylinePositionsList);
+        }
+
+        private void ClearPolylines(out List<Position> polylinePositions)
+        {
+            Polylines?.Clear();
+            polylinePositions = new List<Position>();
         }
 
         private void ClearPolylines()
@@ -557,7 +560,7 @@ namespace PGBus.ViewModels
 
         protected void AddPinsToMap(Pin pin)
         {
-            Pins.Add(pin);
+            Pins?.Add(pin);
         }
 
         protected void ClearPinsMap()
@@ -590,6 +593,16 @@ namespace PGBus.ViewModels
         public string TimeRemainingMessage(TimeSpan time)
         {
             return $"Chegando em aproximadamente {time.Minutes}:{time.Seconds:00} minutos";
+        }
+
+        public void VehicleStatusMessage(string time, Pin vehicle)
+        {
+            //TODO: Ajustar mensagem para quando veículo estiver proximo (< 1 min) ajustar mensagem para veículo chegando
+            RemainingTime = time;
+            LineIdDescription = ((PinAdditionalInfo)vehicle?.Tag)?.CodigoLinha;
+            LineDestination = ((PinAdditionalInfo)vehicle?.Tag).Sentido.Equals("2") ?
+                            ((PinAdditionalInfo)vehicle?.Tag)?.Destino?.Split('/').FirstOrDefault() :
+                            ((PinAdditionalInfo)vehicle?.Tag)?.Destino?.Split('/').LastOrDefault();
         }
 
     }
