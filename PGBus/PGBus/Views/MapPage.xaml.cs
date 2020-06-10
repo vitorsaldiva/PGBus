@@ -1,16 +1,5 @@
-﻿using MvvmHelpers;
-using Newtonsoft.Json;
-using PGBus.Models;
-using PGBus.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using PGBus.ViewModels;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.GoogleMaps;
 using Xamarin.Forms.Xaml;
@@ -49,7 +38,7 @@ namespace PGBus.Views
         protected override void OnAppearing()
         {
             base.OnAppearing();
-        }    
-        
+        }
+
     }
 }

@@ -1,7 +1,6 @@
-﻿using System;
+﻿using PGBus.Views;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using PGBus.Views;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace PGBus

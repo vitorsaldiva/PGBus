@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PGBus.Models
+﻿namespace PGBus.Models
 {
     public class Item
     {

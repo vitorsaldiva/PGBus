@@ -1,8 +1,8 @@
-﻿using System;
+﻿using PGBus.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using PGBus.Models;
 
 namespace PGBus.Services
 {

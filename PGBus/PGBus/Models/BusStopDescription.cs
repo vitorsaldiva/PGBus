@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PGBus.Models
+﻿namespace PGBus.Models
 {
     public class BusStopDescription
     {

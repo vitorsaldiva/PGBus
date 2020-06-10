@@ -5,14 +5,10 @@ using PGBus.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Web;
-using System.Xml;
-using Xamarin.Essentials;
 using Xamarin.Forms.GoogleMaps;
 
 namespace PgBus.TestClient
@@ -61,7 +57,7 @@ namespace PgBus.TestClient
             var initialRoutePoint = rota.OrderBy(p => Haversine(startPlace, p))
                 .FirstOrDefault();
 
-            
+
             /*
              *  Utiliza a coordenada final (lat/lng ponto do onibus) para buscar, 
              *  dentro da lista de coordenadas da rota da linha, a coordenada 
@@ -70,7 +66,7 @@ namespace PgBus.TestClient
             var finalRoutePoint = rota.OrderBy(p => Haversine(endPlace, p))
                 .FirstOrDefault();
 
-            
+
             /*
              * Seleciona apenas as coordenadas que estejam entre o intervalo entre o ponto inicial e o final
              * para exibição do polyline

@@ -1,23 +1,21 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using Newtonsoft.Json;
+using PGBus.MapCustomization;
+using PGBus.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Web;
-using HtmlAgilityPack;
-using Newtonsoft.Json;
-using PGBus.MapCustomization;
-using PGBus.Models;
 using Xamarin.Forms.GoogleMaps;
 
 namespace PGBus.Services
 {
     public class PiracicabanaService : IPiracicabanaService
     {
-        
+
         //URL principal
         private const string url = "https://quantotempofaltapg.piracicabana.com.br";
 
@@ -98,11 +96,11 @@ namespace PGBus.Services
 
         public List<Vehicle> LoadVehicles(string lineId)
         {
-            using(var response = new HttpClient().GetAsync($"{url}/pg_mapaLinha.php?idLinha={lineId}").Result)
+            using (var response = new HttpClient().GetAsync($"{url}/pg_mapaLinha.php?idLinha={lineId}").Result)
             {
                 if (response.IsSuccessStatusCode)
                     docPage.LoadHtml(response.Content.ReadAsStringAsync().Result);
-            } 
+            }
 
             var scriptNode = docPage?.DocumentNode.SelectNodes("//script[last()]").Where(n => !string.IsNullOrEmpty(n?.InnerHtml))?.FirstOrDefault();
 
@@ -133,7 +131,7 @@ namespace PGBus.Services
                         json = json.Insert(0, "[").Insert((json.Length + 1), "]");
                         vehicles = JsonConvert.DeserializeObject<List<Vehicle>>(json);
                     }
-                } 
+                }
             }
 
             return vehicles;
@@ -161,7 +159,7 @@ namespace PGBus.Services
 
                 linha.Code = linhaCodigo;
                 linha.LineId = idLinha;
-                linha.Description = linhaDescricao.Length > 70 ? 
+                linha.Description = linhaDescricao.Length > 70 ?
                                 linhaDescricao.Substring(0, 70) : linhaDescricao;
                 linha.FullDescription = linhaDescricao;
 

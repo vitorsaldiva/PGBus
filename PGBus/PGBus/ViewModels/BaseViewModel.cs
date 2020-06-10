@@ -3,11 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-using Xamarin.Forms;
-
-using PGBus.Models;
-using PGBus.Services;
-
 namespace PGBus.ViewModels
 {
     public class BaseViewModel : INotifyPropertyChanged

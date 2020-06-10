@@ -1,13 +1,11 @@
-﻿using System;
-
+﻿
 using Android.App;
 using Android.Content.PM;
+using Android.OS;
 using Android.Runtime;
 using Android.Views;
-using Android.Widget;
-using Android.OS;
-using Xamarin.Essentials;
 using FFImageLoading.Forms.Platform;
+using Xamarin.Essentials;
 
 namespace PGBus.Droid
 {

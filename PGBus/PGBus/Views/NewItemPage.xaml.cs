@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿using PGBus.Models;
+using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-
-using PGBus.Models;
 
 namespace PGBus.Views
 {

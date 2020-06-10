@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PGBus", "PGBus\PGBus\PGBus.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestClient", "TestClient", "{DE1C4D66-125E-4EF5-AFA6-38AF836C939E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgBus.TestClient", "PgBus.TestClient\PgBus.TestClient.csproj", "{82D466E8-0257-485B-9AC0-0984B9793C71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PgBus.TestClient", "PgBus.TestClient\PgBus.TestClient.csproj", "{82D466E8-0257-485B-9AC0-0984B9793C71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Xamarin.Forms.GoogleMaps;
 
 namespace PGBus.MapCustomization
@@ -16,13 +14,13 @@ namespace PGBus.MapCustomization
         }
 
         [JsonProperty(PropertyName = "lat")]
-        public double Latitude 
+        public double Latitude
         {
             get;
             set;
         }
         [JsonProperty(PropertyName = "lng")]
-        public double Longitude 
+        public double Longitude
         {
             get;
             set;
