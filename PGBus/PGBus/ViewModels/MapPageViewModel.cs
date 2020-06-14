@@ -104,7 +104,7 @@ namespace PGBus.ViewModels
             set
             {
                 _items = value;
-                OnPropertyChanged("Items");
+                OnPropertyChanged(nameof(Items));
             }
         }
 
@@ -305,56 +305,73 @@ namespace PGBus.ViewModels
 
             Device.StartTimer(TimeSpan.FromSeconds(16), () =>
            {
+               //TODO: Melhoria: Verificar possibilidade de centralizar em uma unica função
                Device.BeginInvokeOnMainThread(async () =>
                    {
                        var pinsToRemove = map.Pins?.Where(p => p?.Type == (PinType.Generic)).ToList();
 
-                       var vehicles = LoadVehicles(SelectedLineId?.LineId).Result;
-
-                       //TODO: Ajustar o que fazer quando não encontrar nenhum veículo
-                       if (vehicles?.Count > 0)
+                       if (!string.IsNullOrEmpty(SelectedLineId?.LineId))
                        {
-                           foreach (var pin in pinsToRemove)
+                           var vehicles = LoadVehicles(SelectedLineId?.LineId).Result;
+
+                           if (vehicles?.Count > 0)
                            {
-                               map.Pins.Remove(pin);
-                           }
-
-                           if (!string.IsNullOrEmpty(VehicleSelected))
-                           {
-                               var polylinePoints = Polylines.SelectMany(p => p.Positions).ToList();
-
-                               var vehicleSelected = vehicles.Where(p => p.Label.Equals(VehicleSelected)).FirstOrDefault();
-
-                               var time =
-                                TimeSpan.FromHours(CalculateRemainingTime(polylinePoints));
-
-                               VehicleStatusMessage(TimeRemainingMessage(time), vehicleSelected);
-
-                               //TODO: Após veículo chegar ao ponto, exception ao set bearing
-                               vehicleSelected.Rotation += GetBearing(vehicleSelected.Position, polylinePoints.ElementAt(0));
-
-                               var busStopPin = Pins.Where(p => p?.Type == (PinType.Place)).FirstOrDefault();
-                               var startLocation = new Location { Latitude = busStopPin.Position.Latitude, Longitude = busStopPin.Position.Longitude };
-                               var endLocation = new Location { Latitude = vehicleSelected.Position.Latitude, Longitude = vehicleSelected.Position.Longitude };
-                               if (Location.CalculateDistance(startLocation, endLocation, DistanceUnits.Kilometers) >= MinimumDistance)
+                               foreach (var pin in pinsToRemove)
                                {
-                                   UpdatePolylineMap(vehicleSelected, polylinePoints);
-                                   AddPinsToMap(vehicleSelected);
-                                   await UpdateCamera(new List<Position> { vehicleSelected.Position, busStopPin.Position });
+                                   map.Pins?.Remove(pin);
+                               }
+
+                               if (!string.IsNullOrEmpty(VehicleSelected))
+                               {
+                                   var polylinePoints = Polylines.SelectMany(p => p.Positions).ToList();
+
+                                   var vehicleSelected = vehicles.Where(p => p.Label.Equals(VehicleSelected)).FirstOrDefault();
+
+                                   var time =
+                                    TimeSpan.FromHours(CalculateRemainingTime(polylinePoints));
+
+                                   VehicleStatusMessage(TimeRemainingMessage(time), vehicleSelected);
+
+                                   //TODO: Após veículo chegar ao ponto, exception ao set bearing
+                                   vehicleSelected.Rotation += GetBearing(vehicleSelected.Position, polylinePoints.ElementAt(0));
+
+                                   var busStopPin = Pins.Where(p => p?.Type == (PinType.Place)).FirstOrDefault();
+                                   var startLocation = new Location { Latitude = busStopPin.Position.Latitude, Longitude = busStopPin.Position.Longitude };
+                                   var endLocation = new Location { Latitude = vehicleSelected.Position.Latitude, Longitude = vehicleSelected.Position.Longitude };
+                                   if (Location.CalculateDistance(startLocation, endLocation, DistanceUnits.Kilometers) >= MinimumDistance)
+                                   {
+                                       UpdatePolylineMap(vehicleSelected, polylinePoints);
+                                       AddPinsToMap(vehicleSelected);
+                                       await UpdateCamera(new List<Position> { vehicleSelected.Position, busStopPin.Position });
+                                   }
+                                   else
+                                       VehicleSelected = string.Empty;
+
                                }
                                else
-                                   VehicleSelected = string.Empty;
-
+                                   AddPinsToMap(vehicles); 
                            }
                            else
-                               AddPinsToMap(vehicles);
+                               await Application.Current.MainPage.DisplayAlert("Erro", BuildLineMessageError(), "Ok");
                        }
+                       else
+                           return;
 
                    });
                return true;
            });
             PageStatusEnum = PageStatusEnum.Default;
             Items = _service.LoadLinesId();
+        }
+
+        //TODO: Ajustar para receber o código da linha para ajustar a mensagem de acordo.
+        private string BuildLineMessageError()
+        {
+            var now = DateTime.Now;
+            var message = string.Empty;
+            message = (now > Convert.ToDateTime("00:10") && now < Convert.ToDateTime("02:00")) ?
+                "Não há veículos disponíveis na linha" : "Houve um erro ao carregar os veículos!\nAguarde a próxima atualização";
+            return message;
         }
 
         private async Task UpdateCamera(List<Position> positions)
@@ -551,7 +568,7 @@ namespace PGBus.ViewModels
         {
             pins.ForEach(pin =>
             {
-                Pins.Add(pin);
+                Pins?.Add(pin);
             });
         }
 
