@@ -20,7 +20,7 @@ namespace PGBus.ViewModels
 {
     public class MapPageViewModel : BaseViewModel
     {
-        private const double MinimumDistance = 0.01f;
+        private const double MinimumDistance = 0.05f;
         private bool isLoading;
 
         public bool IsLoading
@@ -310,6 +310,7 @@ namespace PGBus.ViewModels
                    {
                        var pinsToRemove = map.Pins?.Where(p => p?.Type == (PinType.Generic)).ToList();
 
+                       //TODO: Testar mais rastreio do veículo
                        if (!string.IsNullOrEmpty(SelectedLineId?.LineId))
                        {
                            var vehicles = LoadVehicles(SelectedLineId?.LineId).Result;
@@ -345,7 +346,8 @@ namespace PGBus.ViewModels
                                        await UpdateCamera(new List<Position> { vehicleSelected.Position, busStopPin.Position });
                                    }
                                    else
-                                       VehicleSelected = string.Empty;
+                                       VehicleSelected = string.Empty; SelectedLineId = null;
+
 
                                }
                                else
@@ -606,12 +608,13 @@ namespace PGBus.ViewModels
 
         public string TimeRemainingMessage(TimeSpan time)
         {
-            return $"Chegando em aproximadamente {time.Minutes}:{time.Seconds:00} minutos";
+            //TODO: Testar mensagem de veículo chegando
+            return $@"Chegando{(time.TotalSeconds > 60 ? $" em aproximadamente {time.Minutes}:{time.Seconds:00} minutos" :
+                        $"...")}";
         }
 
         public void VehicleStatusMessage(string time, Pin vehicle)
         {
-            //TODO: Ajustar mensagem para quando veículo estiver proximo (< 1 min) ajustar mensagem para veículo chegando
             RemainingTime = time;
             LineIdDescription = ((PinAdditionalInfo)vehicle?.Tag)?.CodigoLinha;
             LineDestination = ((PinAdditionalInfo)vehicle?.Tag).Sentido.Equals("2") ?
