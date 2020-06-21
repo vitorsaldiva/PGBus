@@ -226,6 +226,7 @@ namespace PGBus.ViewModels
             MoveToRegionRequest.MoveToRegion(VisibleRegion);
         }
 
+        //TODO: Remover customização de pins
         protected async Task<ObservableCollection<Pin>> LoadVehicles(string lineId)
         {
             if (string.IsNullOrEmpty(lineId))
@@ -253,12 +254,12 @@ namespace PGBus.ViewModels
                     Position = new Position(v.Lat, v.Lng),
                     ZIndex = 15,
                     Label = v.Prefixo,
-                    Icon = BitmapDescriptorFactory.FromBundle(@"bus.png"),
+                    Icon = SelectedLineId != null ? BitmapDescriptorFactory.FromBundle(@"bus.png") : BitmapDescriptorFactory.FromBundle(@"bus_2.png"),
                     Tag =
                         new PinAdditionalInfo
                         { Sentido = v.Sentido, CodigoLinha = codigo, Destino = SelectedLineId?.FullDescription },
                     //TODO: Alterar para que a rotação seja de acordo com a formula GetBearing
-                    Rotation = v.Sentido.ToLower().Contains("1") ? (190f) : (-190f)
+                    //Rotation = v.Sentido.ToLower().Contains("1") ? (190f) : (-190f)
                 };
                 listVehicles.Add(vehicle);
             });
@@ -334,7 +335,7 @@ namespace PGBus.ViewModels
                                    VehicleStatusMessage(TimeRemainingMessage(time), vehicleSelected);
 
                                    //TODO: Após veículo chegar ao ponto, exception ao set bearing
-                                   vehicleSelected.Rotation += GetBearing(vehicleSelected.Position, polylinePoints.ElementAt(0));
+                                   //vehicleSelected.Rotation += GetBearing(vehicleSelected.Position, polylinePoints.ElementAt(0));
 
                                    var busStopPin = Pins.Where(p => p?.Type == (PinType.Place)).FirstOrDefault();
                                    var startLocation = new Location { Latitude = busStopPin.Position.Latitude, Longitude = busStopPin.Position.Longitude };
