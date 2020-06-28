@@ -20,7 +20,7 @@ namespace PGBus.ViewModels
 {
     public class MapPageViewModel : BaseViewModel
     {
-        private const double MinimumDistance = 0.05f;
+        private const double MinimumDistance = 0.01f;
         private bool isLoading;
 
         public bool IsLoading
@@ -332,7 +332,6 @@ namespace PGBus.ViewModels
 
                                    VehicleStatusMessage(TimeRemainingMessage(time), vehicleSelected);
 
-                                   //TODO: Após veículo chegar ao ponto, exception ao set bearing
                                    if (vehicleSelected != null)
                                        vehicleSelected.Rotation += GetBearing(vehicleSelected.Position, polylinePoints.ElementAt(0)); 
 
@@ -346,7 +345,10 @@ namespace PGBus.ViewModels
                                        await UpdateCamera(new List<Position> { vehicleSelected.Position, busStopPin.Position });
                                    }
                                    else
-                                       VehicleSelected = string.Empty; SelectedLineId = null;
+                                   {
+                                       VehicleSelected = string.Empty; 
+                                       SelectedLineId = null;
+                                   }
 
 
                                }
