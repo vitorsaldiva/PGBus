@@ -304,7 +304,7 @@ namespace PGBus.ViewModels
 
             Device.StartTimer(TimeSpan.FromSeconds(16), () =>
            {
-               //TODO: Melhoria: Verificar possibilidade de centralizar em uma unica função
+               //TODO: Melhoria: Centralizar em uma unica função
                Device.BeginInvokeOnMainThread(async () =>
                    {
                        var pinsToRemove = map.Pins?.Where(p => p?.Type == (PinType.Generic)).ToList();
