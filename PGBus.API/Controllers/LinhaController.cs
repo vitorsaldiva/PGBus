@@ -8,8 +8,11 @@ using PGBus.API.Model;
 
 namespace PGBus.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public class LinhaController : ControllerBase, ILinhaController
     {
         private readonly IPiracicabanaService service;
